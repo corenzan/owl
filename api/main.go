@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	"database/sql"
+	"log"
 	"net/http"
 	"os"
 	"os/signal"
@@ -10,13 +12,109 @@ import (
 
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
+	_ "github.com/lib/pq"
+)
+
+var database *sql.DB
+
+// Website ...
+type (
+	Website struct {
+		ID        string    `json:"id"`
+		Timestamp time.Time `json:"timestamp"`
+		URL       string    `json:"url"`
+	}
+
+	// Check ...
+	Check struct {
+		ID        string    `json:"id"`
+		Timestamp time.Time `json:"timestamp"`
+		Status    int       `json:"status"`
+		Latency   int       `json:"latency"`
+	}
 )
 
 func authenticate(key string, c echo.Context) (bool, error) {
 	return key == "123", nil
 }
 
+func handleNewWebsite(c echo.Context) error {
+	website := &Website{
+		Timestamp: time.Now(),
+	}
+	if err := c.Bind(website); err != nil {
+		panic(err)
+	}
+	err := database.QueryRow(`insert into websites (timestamp, url) values ($1, $2) returning id;`, website.Timestamp, website.URL).Scan(&website.ID)
+	if err != nil {
+		panic(err)
+	}
+	if err := c.JSON(http.StatusCreated, website); err != nil {
+		panic(err)
+	}
+	return nil
+}
+
+func handleListWebsites(c echo.Context) error {
+	websites := []*Website{}
+	result, err := database.Query(`select id, timestamp, url from websites;`)
+	if err != nil {
+		panic(err)
+	}
+	defer result.Close()
+	for result.Next() {
+		website := &Website{}
+		err := result.Scan(&website.ID, &website.Timestamp, &website.URL)
+		if err != nil {
+			panic(err)
+		}
+		websites = append(websites, website)
+	}
+	return c.JSON(http.StatusOK, websites)
+}
+
+func handleNewCheck(c echo.Context) error {
+	check := &Check{
+		Timestamp: time.Now(),
+	}
+	if err := c.Bind(check); err != nil {
+		panic(err)
+	}
+	err := database.QueryRow(`insert into checks (website_id, timestamp, status, latency) values ($1, $2, $3, $4) returning id;`, c.Param("id"), time.Now(), check.Status, check.Latency).Scan(&check.ID)
+	if err != nil {
+		panic(err)
+	}
+	if err := c.JSON(http.StatusCreated, check); err != nil {
+		panic(err)
+	}
+	return nil
+}
+
+func handleListChecks(c echo.Context) error {
+	checks := []*Check{}
+	result, err := database.Query(`select id, timestamp, status, latency from checks order by timestamp asc;`)
+	if err != nil {
+		panic(err)
+	}
+	defer result.Close()
+	for result.Next() {
+		check := &Check{}
+		err := result.Scan(&check.ID, &check.Timestamp, &check.Status, &check.Latency)
+		if err != nil {
+			panic(err)
+		}
+		checks = append(checks, check)
+	}
+	return c.JSON(http.StatusOK, checks)
+}
+
 func main() {
+	var err error
+	database, err = sql.Open("postgres", os.Getenv("DATABASE_URL"))
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	e := echo.New()
 
 	e.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
@@ -24,12 +122,12 @@ func main() {
 	}))
 	e.Use(middleware.Recover())
 	e.Use(middleware.RequestID())
+	e.Use(middleware.KeyAuth(authenticate))
 
-	g := e.Group("/", middleware.KeyAuth(authenticate))
-
-	g.GET("/", func(c echo.Context) error {
-		return c.JSON(http.StatusOK, map[string]string{"status": "ok"})
-	})
+	e.POST("/websites", handleNewWebsite)
+	e.GET("/websites", handleListWebsites)
+	e.POST("/websites/:id/checks", handleNewCheck)
+	e.GET("/websites/:id/checks", handleListChecks)
 
 	shutdown := make(chan os.Signal)
 	signal.Notify(shutdown, syscall.SIGTERM, syscall.SIGINT)

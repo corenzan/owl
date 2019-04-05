@@ -11,6 +11,5 @@ create table checks (
     website_id integer references websites (id),
     timestamp timestamp not null default now(),
     status integer not null,
-    latency integer not null,
-    response text,
+    latency integer not null
 );
