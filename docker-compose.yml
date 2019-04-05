@@ -1,5 +1,16 @@
 version: "3"
 services:
+  agent:
+    image: golang:1.12.1-alpine
+    depends_on:
+      - api
+    volumes:
+      - ./agent:/usr/local/src
+    environment:
+      - API_URL=http://api:5000
+      - API_KEY=123
+    working_dir: /usr/local/src
+    command: go run .
   api:
     build: ./api
     depends_on:
