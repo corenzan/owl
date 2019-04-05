@@ -75,15 +75,26 @@ func handleListWebsites(c echo.Context) error {
 }
 
 func handleNewCheck(c echo.Context) error {
+	website := &Website{}
+	err := database.QueryRow(`select id, timestamp, url, status from websites where id = $1;`, c.Param("id")).Scan(&website.ID, &website.Timestamp, &website.URL, &website.Status)
+	if err != nil {
+		panic(err)
+	}
 	check := &Check{
 		Timestamp: time.Now(),
 	}
 	if err := c.Bind(check); err != nil {
 		panic(err)
 	}
-	err := database.QueryRow(`insert into checks (website_id, timestamp, status, latency) values ($1, $2, $3, $4) returning id;`, c.Param("id"), time.Now(), check.Status, check.Latency).Scan(&check.ID)
+	err = database.QueryRow(`insert into checks (website_id, timestamp, status, latency) values ($1, $2, $3, $4) returning id;`, website.ID, time.Now(), check.Status, check.Latency).Scan(&check.ID)
 	if err != nil {
 		panic(err)
+	}
+	if check.Status != website.Status {
+		_, err := database.Exec(`update websites set timestamp = $2, status = $3 where id = $1;`, website.ID, time.Now(), check.Status)
+		if err != nil {
+			panic(err)
+		}
 	}
 	if err := c.JSON(http.StatusCreated, check); err != nil {
 		panic(err)
