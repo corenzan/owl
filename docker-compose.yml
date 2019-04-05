@@ -15,7 +15,7 @@ services:
   client:
     build: ./client
     ports:
-      - 1234
+      - 3000
     volumes:
       - ./client:/usr/local/src
     environment:

@@ -1,19 +1,28 @@
 {
-  "name": "owl",
-  "version": "1.0.0",
-  "repository": "https://github.com/corenzan/owl",
-  "author": "Arthur <arthur@corenzan.com>",
-  "license": "MIT",
+  "name": "client",
+  "version": "0.1.0",
   "private": true,
-  "devDependencies": {
-    "parcel-bundler": "^1.12.3",
-    "parcel-plugin-sw-precache": "^1.1.0"
+  "dependencies": {
+    "react": "^16.8.6",
+    "react-dom": "^16.8.6",
+    "react-scripts": "2.1.8",
+    "react-timeago": "^4.4.0",
+    "resetize": "^26.0.0",
+    "styled-components": "^4.2.0"
   },
   "scripts": {
-    "build": "parcel build src/index.html",
-    "start": "parcel serve src/index.html"
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
   },
-  "dependencies": {
-    "resetize": "^26.0.0"
-  }
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "browserslist": [
+    ">0.2%",
+    "not dead",
+    "not ie <= 11",
+    "not op_mini all"
+  ]
 }
