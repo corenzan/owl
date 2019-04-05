@@ -134,6 +134,7 @@ func main() {
 	}))
 	e.Use(middleware.Recover())
 	e.Use(middleware.RequestID())
+	e.Use(middleware.CORS())
 	e.Use(middleware.KeyAuth(authenticate))
 
 	e.POST("/websites", handleNewWebsite)
