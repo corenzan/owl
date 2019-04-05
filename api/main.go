@@ -20,7 +20,7 @@ var database *sql.DB
 type (
 	// Website ...
 	Website struct {
-		ID        string    `json:"id"`
+		ID        int       `json:"id"`
 		Timestamp time.Time `json:"timestamp"`
 		URL       string    `json:"url"`
 		Status    int       `json:"status"`
@@ -28,7 +28,7 @@ type (
 
 	// Check ...
 	Check struct {
-		ID        string    `json:"id"`
+		ID        int       `json:"id"`
 		Timestamp time.Time `json:"timestamp"`
 		Status    int       `json:"status"`
 		Latency   int       `json:"latency"`
