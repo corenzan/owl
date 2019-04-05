@@ -1,0 +1,29 @@
+version: "3"
+services:
+  api:
+    build: ./api
+    depends_on:
+      - db
+    ports:
+      - 5000
+    volumes:
+      - ./api:/usr/local/src
+    environment:
+      - PORT=5000
+      - VIRTUAL_HOST=api.owl.localhost
+      - DATABASE_URL=postgres://postgres:123@db/postgres?sslmode=disable
+  client:
+    build: ./client
+    ports:
+      - 1234
+    volumes:
+      - ./client:/usr/local/src
+    environment:
+      - VIRTUAL_HOST=owl.localhost
+      - API_URL=http://api.owl.localhost
+  db:
+    image: postgres:11.1-alpine
+    ports:
+      - 5432
+    environment:
+      - POSTGRES_PASSWORD=123

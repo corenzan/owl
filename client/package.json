@@ -1,0 +1,19 @@
+{
+  "name": "owl",
+  "version": "1.0.0",
+  "repository": "https://github.com/corenzan/owl",
+  "author": "Arthur <arthur@corenzan.com>",
+  "license": "MIT",
+  "private": true,
+  "devDependencies": {
+    "parcel-bundler": "^1.12.3",
+    "parcel-plugin-sw-precache": "^1.1.0"
+  },
+  "scripts": {
+    "build": "parcel build src/index.html",
+    "start": "parcel serve src/index.html"
+  },
+  "dependencies": {
+    "resetize": "^26.0.0"
+  }
+}
