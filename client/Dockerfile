@@ -5,5 +5,6 @@ ADD package.json yarn.lock /usr/local/src/
 RUN yarn 
 
 ADD . /usr/local/src
+EXPOSE 1234
 
 CMD ["yarn", "start"]
