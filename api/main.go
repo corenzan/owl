@@ -93,7 +93,7 @@ func handleNewCheck(c echo.Context) error {
 
 func handleListChecks(c echo.Context) error {
 	checks := []*Check{}
-	result, err := database.Query(`select id, timestamp, status, latency from checks order by timestamp asc;`)
+	result, err := database.Query(`select id, timestamp, status, latency from checks where timestamp > now() - interval '6 hours' order by timestamp asc;`)
 	if err != nil {
 		panic(err)
 	}
