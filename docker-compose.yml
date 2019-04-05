@@ -20,7 +20,7 @@ services:
       - ./client:/usr/local/src
     environment:
       - VIRTUAL_HOST=owl.localhost
-      - API_URL=http://api.owl.localhost
+      - REACT_APP_API_URL=http://api.owl.localhost
   db:
     image: postgres:11.1-alpine
     ports:
