@@ -11,8 +11,11 @@ const barStatusColors = {
   5: "#e46b58"
 };
 
-const Bar = ({ className, index, latency, maxLatency }) => {
-  const h = (latency / maxLatency) * baseBarHeight;
+const maxLatency = 5000;
+
+const Bar = ({ className, index, latency }) => {
+  let h = (latency / maxLatency) * baseBarHeight;
+  if (isNaN(h)) h = 0;
 
   return (
     <rect
@@ -34,7 +37,6 @@ const StyledBar = styled(Bar)`
 export default ({ className, checks }) => {
   const w = checks.length * (barWidth + barGap) - barGap;
   const viewBox = `0 0 ${w} ${baseBarHeight}`;
-  const maxLatency = Math.max(...checks.map(check => check.latency));
 
   return (
     <svg className={className} role="img" viewBox={viewBox}>
@@ -44,7 +46,6 @@ export default ({ className, checks }) => {
           index={index}
           status={check.status}
           latency={check.latency}
-          maxLatency={maxLatency}
         />
       ))}
     </svg>
