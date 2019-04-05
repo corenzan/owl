@@ -17,12 +17,13 @@ import (
 
 var database *sql.DB
 
-// Website ...
 type (
+	// Website ...
 	Website struct {
 		ID        string    `json:"id"`
 		Timestamp time.Time `json:"timestamp"`
 		URL       string    `json:"url"`
+		Status    int       `json:"status"`
 	}
 
 	// Check ...
@@ -57,14 +58,14 @@ func handleNewWebsite(c echo.Context) error {
 
 func handleListWebsites(c echo.Context) error {
 	websites := []*Website{}
-	result, err := database.Query(`select id, timestamp, url from websites;`)
+	result, err := database.Query(`select id, timestamp, url, status from websites order by status desc;`)
 	if err != nil {
 		panic(err)
 	}
 	defer result.Close()
 	for result.Next() {
 		website := &Website{}
-		err := result.Scan(&website.ID, &website.Timestamp, &website.URL)
+		err := result.Scan(&website.ID, &website.Timestamp, &website.URL, &website.Status)
 		if err != nil {
 			panic(err)
 		}
