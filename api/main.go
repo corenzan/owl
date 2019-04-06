@@ -36,7 +36,7 @@ type (
 )
 
 func authenticate(key string, c echo.Context) (bool, error) {
-	return key == "123", nil
+	return key == os.Getenv("API_KEY"), nil
 }
 
 func handleNewWebsite(c echo.Context) error {
