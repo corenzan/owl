@@ -27,7 +27,9 @@ export default ({ website }) => {
   const [checks, setChecks] = useState([]);
 
   useEffect(() => {
-    request(`/websites/${website.id}/checks`).then(setChecks);
+    request(`/websites/${website.id}/checks`).then(checks => {
+      setChecks(checks.slice(checks.length - 50));
+    });
   }, []);
 
   return (
