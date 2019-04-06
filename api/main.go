@@ -135,12 +135,14 @@ func main() {
 	e.Use(middleware.Recover())
 	e.Use(middleware.RequestID())
 	e.Use(middleware.CORS())
-	e.Use(middleware.KeyAuth(authenticate))
 
-	e.POST("/websites", handleNewWebsite)
 	e.GET("/websites", handleListWebsites)
-	e.POST("/websites/:id/checks", handleNewCheck)
 	e.GET("/websites/:id/checks", handleListChecks)
+
+	reqAuth := middleware.KeyAuth(authenticate)
+
+	e.POST("/websites", handleNewWebsite, reqAuth)
+	e.POST("/websites/:id/checks", handleNewCheck, reqAuth)
 
 	shutdown := make(chan os.Signal)
 	signal.Notify(shutdown, syscall.SIGTERM, syscall.SIGINT)
