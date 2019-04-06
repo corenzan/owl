@@ -7,4 +7,4 @@ ADD . /usr/local/src
 
 ENV GO111MODULE on
 
-CMD ["/usr/local/src/entrypoint"]
+CMD ["/usr/local/src/entrypoint.sh"]
