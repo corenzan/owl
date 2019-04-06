@@ -1,10 +1,5 @@
 export const request = path => {
-  const options = {
-    headers: {
-      Authorization: "Bearer " + process.env.REACT_APP_API_KEY
-    }
-  };
-  return fetch(process.env.REACT_APP_API_URL + path, options)
+  return fetch(process.env.REACT_APP_API_URL + path)
     .then(response => {
       if (!response.ok) {
         throw Error(response.status);
