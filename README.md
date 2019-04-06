@@ -40,7 +40,11 @@ The client is a React application controlled by [create-react-app](https://githu
 
 ## Deploy
 
-⚠️ Albeit the agent, the API, and the client share the same repository **they're deployed separately**. For heroku like environments you can use [git-subtree](https://github.com/apenwarr/git-subtree/blob/master/git-subtree.txt).
+⚠️ Albeit the agent, the API, and the client share the same repository **they're deployed separately**. For heroku like environments you can use [git-subtree](https://github.com/apenwarr/git-subtree/blob/master/git-subtree.txt). e.g.
+
+```shell
+$ git subtree push --prefix api heroku master
+```
 
 ## License
 
