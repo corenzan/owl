@@ -19,6 +19,7 @@ services:
       - ./api:/usr/local/src
     environment:
       - PORT=5000
+      - API_KEY=123
       - VIRTUAL_HOST=api.owl.localhost
       - DATABASE_URL=postgres://postgres:123@db/postgres?sslmode=disable
   client:
