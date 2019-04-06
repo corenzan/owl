@@ -1,4 +1,4 @@
-package main
+package agent
 
 import (
 	"bytes"
@@ -41,45 +41,50 @@ func apiRequest(c *http.Client, method, path string, body io.Reader) (*http.Resp
 	return resp, nil
 }
 
-func main() {
+func check(c *http.Client, w *Website) error {
+	check := &Check{
+		Status: 999,
+	}
+	checkpoint := time.Now()
+	resp, err := http.Head(w.URL)
+	// TODO: we still need to surface this error but differently
+	// than the others beucase although it indicates a failure
+	// to check the site, it could very well be the agent's fault.
+	if err == nil {
+		check.Status = resp.StatusCode
+	}
+	check.Latency = time.Since(checkpoint) / time.Millisecond
+	payload := &bytes.Buffer{}
+	err = json.NewEncoder(payload).Encode(check)
+	if err != nil {
+		return err
+	}
+	_, err = apiRequest(c, "POST", fmt.Sprintf("/websites/%d/checks", w.ID), payload)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// Run ...
+func Run() {
 	c := &http.Client{
 		Timeout: time.Second * 5,
 	}
 	resp, err := apiRequest(c, "GET", "/websites", nil)
 	if err != nil {
-		log.Print("api: websites request failed")
-		log.Fatal(err)
+		log.Fatal("api request failed: ", err)
 	}
 	websites := []*Website{}
 	err = json.NewDecoder(resp.Body).Decode(&websites)
 	if err != nil {
-		log.Print("api: decode failed")
-		log.Fatal(err)
+		log.Fatal("api decode failed: ", err)
 	}
 	for _, website := range websites {
-		log.Printf("website: checking %s", website.URL)
-		check := &Check{
-			Status: 999,
-		}
-		checkpoint := time.Now()
-		resp, err := http.Head(website.URL)
-		if err == nil {
-			check.Status = resp.StatusCode
-		} else {
-			log.Print("website: request failed")
-			log.Print(err)
-		}
-		check.Latency = time.Since(checkpoint) / time.Millisecond
-		payload := &bytes.Buffer{}
-		err = json.NewEncoder(payload).Encode(check)
+		log.Printf("checking %s", website.URL)
+		err := check(c, website)
 		if err != nil {
-			log.Print("api: encode failed")
-			log.Fatal(err)
-		}
-		_, err = apiRequest(c, "POST", fmt.Sprintf("/websites/%d/checks", website.ID), payload)
-		if err != nil {
-			log.Print("api: checks request failed")
-			log.Fatal(err)
+			log.Fatal("check failed: ", err)
 		}
 	}
 }
