@@ -1,1 +1,0 @@
-* * * * * test -f /usr/local/src/halt.txt || go run /usr/local/src
