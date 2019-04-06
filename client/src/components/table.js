@@ -3,6 +3,7 @@ import styled from "styled-components";
 
 const StyledTable = styled.table`
   width: 100%;
+  table-layout: fixed;
 `;
 
 export const Table = ({ children }) => (
@@ -24,7 +25,7 @@ const getCellCollapseDisplayValue = collapse => {
     case "collapse":
       return "none";
     case "wrap":
-      return "inline-block";
+      return "table-cell";
     default:
       return "table-cell";
   }
@@ -33,9 +34,12 @@ const getCellCollapseDisplayValue = collapse => {
 const StyledCell = styled.td`
   height: 3rem;
   line-height: 1.25;
+  overflow: hidden;
   padding: 0 0.75rem;
   text-align: ${props => props.alignment || "center"};
+  text-overflow: ellipsis;
   vertical-align: middle;
+  white-space: nowrap;
   width: ${props => props.width || "auto"};
 
   &:first-child {
@@ -48,13 +52,29 @@ const StyledCell = styled.td`
     border-radius: 0 3rem 3rem 0;
   }
 
+  small {
+    display: none;
+  }
+
   @media screen and (max-width: 768px) {
     display: ${props => getCellCollapseDisplayValue(props.collapse)};
+    height: 3.75rem;
+
+    &:first-child {
+      border-radius: 0;
+    }
+
+    &:last-child {
+      border-radius: 0;
+    }
+
+    small {
+      display: block;
+      line-height: 1.5;
+    }
   }
 `;
 
-export const Cell = ({ width, alignment, collapse, children }) => (
-  <StyledCell width={width} alignment={alignment} collapse={collapse}>
-    {children}
-  </StyledCell>
+export const Cell = ({ children, ...props }) => (
+  <StyledCell {...props}>{children}</StyledCell>
 );

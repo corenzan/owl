@@ -7,6 +7,10 @@ import { request } from "../api.js";
 const StyledMain = styled.main`
   color: #3c342a;
   padding: 3rem 1.5rem;
+
+  @media screen and (max-width: 768px) {
+    padding: 3rem 0;
+  }
 `;
 
 export default () => {

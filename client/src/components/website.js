@@ -28,28 +28,31 @@ export default ({ website }) => {
 
   useEffect(() => {
     request(`/websites/${website.id}/checks`).then(checks => {
-      setChecks(checks.slice(checks.length - 50));
+      setChecks(checks.slice(checks.length - 100));
     });
   }, []);
 
   return (
     <Row>
-      <Cell width="1">
+      <Cell width="4.125rem">
         <Indicator status={website.status} />
       </Cell>
       <Cell alignment="left">
         <a href={website.url}>{website.url}</a>
+        <small>
+          <TimeAgo date={website.timestamp} />
+        </small>
       </Cell>
       <Cell collapse="collapse">
         {checks.length ? <StyledChart checks={checks} /> : "-"}
       </Cell>
-      <Cell collapse="collapse">
+      <Cell width="6rem" collapse="collapse">
         {checks.length ? goodStatusRatio(checks) + "%" : "-"}
       </Cell>
-      <Cell collapse="collapse">
+      <Cell width="6rem" collapse="collapse">
         {checks.length ? averageLatency(checks) + "s" : "-"}
       </Cell>
-      <Cell collapse="wrap">
+      <Cell width="10rem" collapse="collapse">
         <TimeAgo date={website.timestamp} />
       </Cell>
     </Row>
