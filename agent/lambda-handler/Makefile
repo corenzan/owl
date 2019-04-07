@@ -18,11 +18,11 @@ default: clean
 clean:
 	rm -rf dist
 update: default
-	echo aws lambda create-function \
+	aws lambda create-function \
 		--function-name $(NAME) \
 		--zip-file fileb://$(PREFIX)/$(ZIPFILE)
 create: default
-	echo aws lambda create-function \
+	aws lambda create-function \
 		--region $(REGION) \
 		--function-name $(NAME) \
 		--memory $(MEMORY) \
