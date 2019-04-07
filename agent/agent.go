@@ -7,7 +7,6 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"os"
 	"time"
 )
 
@@ -23,30 +22,43 @@ type (
 		Status  int           `json:"status"`
 		Latency time.Duration `json:"latency"`
 	}
+
+	// Agent ...
+	Agent struct {
+		endpoint, key string
+		client        *http.Client
+	}
 )
 
-var (
-	endpoint = os.Getenv("API_URL")
-	key      = os.Getenv("API_KEY")
-)
+// New ...
+func New(endpoint, key string) *Agent {
+	return &Agent{
+		endpoint: endpoint,
+		key:      key,
+		client: &http.Client{
+			Timeout: time.Second * 5,
+		},
+	}
+}
 
-func apiRequest(c *http.Client, method, path string, body io.Reader) (*http.Response, error) {
-	req, err := http.NewRequest(method, endpoint+path, body)
-	req.Header.Add("Authorization", "Bearer "+key)
+func (a *Agent) apiRequest(method, path string, body io.Reader) (*http.Response, error) {
+	req, err := http.NewRequest(method, a.endpoint+path, body)
+	req.Header.Add("Authorization", "Bearer "+a.key)
 	req.Header.Set("Content-Type", "application/json; charset=utf-8")
-	resp, err := c.Do(req)
+	resp, err := a.client.Do(req)
 	if err != nil {
 		return nil, err
 	}
 	return resp, nil
 }
 
-func check(c *http.Client, w *Website) error {
+// Check ...
+func (a *Agent) Check(w *Website) error {
 	check := &Check{
 		Status: 999,
 	}
 	checkpoint := time.Now()
-	resp, err := http.Head(w.URL)
+	resp, err := a.client.Head(w.URL)
 	// TODO: we still need to surface this error but differently
 	// than the others beucase although it indicates a failure
 	// to check the site, it could very well be the agent's fault.
@@ -59,7 +71,7 @@ func check(c *http.Client, w *Website) error {
 	if err != nil {
 		return err
 	}
-	_, err = apiRequest(c, "POST", fmt.Sprintf("/websites/%d/checks", w.ID), payload)
+	_, err = a.apiRequest("POST", fmt.Sprintf("/websites/%d/checks", w.ID), payload)
 	if err != nil {
 		return err
 	}
@@ -67,11 +79,8 @@ func check(c *http.Client, w *Website) error {
 }
 
 // Run ...
-func Run() {
-	c := &http.Client{
-		Timeout: time.Second * 5,
-	}
-	resp, err := apiRequest(c, "GET", "/websites", nil)
+func (a *Agent) Run() {
+	resp, err := a.apiRequest("GET", "/websites", nil)
 	if err != nil {
 		log.Fatal("api request failed: ", err)
 	}
@@ -82,7 +91,7 @@ func Run() {
 	}
 	for _, website := range websites {
 		log.Printf("checking %s", website.URL)
-		err := check(c, website)
+		err := a.Check(website)
 		if err != nil {
 			log.Fatal("check failed: ", err)
 		}
