@@ -7,15 +7,12 @@ import (
 	"testing"
 )
 
-// RoundTripFunc .
 type RoundTripFunc func(req *http.Request) *http.Response
 
-// RoundTrip .
 func (f RoundTripFunc) RoundTrip(req *http.Request) (*http.Response, error) {
 	return f(req), nil
 }
 
-//NewTestClient returns *http.Client with Transport replaced to avoid making real calls
 func NewTestClient(fn RoundTripFunc) *http.Client {
 	return &http.Client{
 		Transport: RoundTripFunc(fn),
@@ -31,7 +28,7 @@ func TestNew(t *testing.T) {
 		t.Fail()
 	}
 }
-func TestAPIRequest(t *testing.T) {
+func TestAgentAPIRequest(t *testing.T) {
 	a := New("https://api", "123")
 
 	method := "GET"
@@ -55,4 +52,38 @@ func TestAPIRequest(t *testing.T) {
 	})
 
 	a.apiRequest(method, path, nil)
+}
+
+func TestAgentCheck(t *testing.T) {
+	a := New("https://api", "123")
+
+	history := []*http.Request{}
+
+	a.client = NewTestClient(func(req *http.Request) *http.Response {
+		history = append(history, req)
+		return &http.Response{
+			StatusCode: 200,
+			Body:       ioutil.NopCloser(bytes.NewBufferString(`OK`)),
+			Header:     make(http.Header),
+		}
+	})
+
+	a.Check(&Website{
+		ID:  1,
+		URL: "https://website",
+	})
+
+	if history[0].Method != "HEAD" {
+		t.Fail()
+	}
+	if history[0].URL.String() != "https://website" {
+		t.Fail()
+	}
+
+	if history[1].Method != "POST" {
+		t.Fail()
+	}
+	if history[1].URL.String() != "https://api/websites/1/checks" {
+		t.Fail()
+	}
 }
