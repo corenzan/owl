@@ -28,7 +28,7 @@ create: default
 		--function-name $(NAME) \
 		--memory $(MEMORY) \
 		--role $(ROLE) \
-		--timeout $(TIMEOUT)
+		--timeout $(TIMEOUT) \
 		--runtime $(RUNTIME) \
 		--zip-file fileb://$(PREFIX)/$(ZIPFILE) \
 		--handler $(HANDLER) \
@@ -36,6 +36,6 @@ create: default
 invoke:
 	aws lambda invoke \
 		--function-name $(NAME) \
-		invoke.log
+		/dev/null
 
 PHONY: default clean update create invoke
