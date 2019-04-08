@@ -2,11 +2,7 @@
 
 # Owl
 
-> Owl is an open source self-hosted website monitor and uptime report dashboard.
-
-## Work in progress
-
-🚨️ This is a work in progress!
+> Owl is an open source self-hosted website monitor and status report dashboard.
 
 ## About
 
@@ -14,11 +10,11 @@ Owl comprises three packages:
 
 1. A web API that handles all the data in and out of the database.
 2. An agent that periodically checks your websites and report back to the API.
-3. A client that consumes the API to display a report with which sites are up, which are down, for how long, among other details.
+3. A client that consumes the API to to manage the data and display the status and history of tha agent's checks.
 
 ## Development
 
-You'll need docker-compose 1.23+.
+You'll need docker-compose 1.23+. Simply run:
 
 ```sh
 $ docker-compose up
@@ -26,13 +22,11 @@ $ docker-compose up
 
 ### Agent
 
-The agent is a program written in Go designed to run separately from the client and API.
-
-When you start the container it'll be ran periodically. You can change how often by providing a file "sleep.txt" with the amount in seconds (defaults to 60, i.e. 1 minute).
+The agent is a Go package designed to be invoked from a standalone Go program. The agent container will watch for source file changes and automatically run the test suite for the package.
 
 ### API
 
-The API is a REST-like API written in Go backed by an instance of PostgreSQL. We use [fresh](https://github.com/gravityblast/fresh) to rebuild automatically on change.
+The API is a web service written in Go backed by an instance of PostgreSQL 10. The API container will watch for source file changes and automatically restart the server for you.
 
 ### Client
 
@@ -45,6 +39,8 @@ The client is a React application controlled by [create-react-app](https://githu
 ```shell
 $ git subtree push --prefix api heroku master
 ```
+
+The agent comes with a sub-package that runs on Amazon Lambda and has a `Makefile` with tasks to deploy and update your functions on the cloud.
 
 ## License
 
