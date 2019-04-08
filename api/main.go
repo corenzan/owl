@@ -58,7 +58,7 @@ func handleNewWebsite(c echo.Context) error {
 
 func handleListWebsites(c echo.Context) error {
 	websites := []*Website{}
-	result, err := database.Query(`select id, timestamp, url, status from websites order by status desc;`)
+	result, err := database.Query(`select id, timestamp, url, status from websites order by status desc, timestamp desc;`)
 	if err != nil {
 		panic(err)
 	}
