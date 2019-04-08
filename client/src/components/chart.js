@@ -4,11 +4,11 @@ import styled from "styled-components";
 const baseBarHeight = 80;
 const barWidth = 8;
 const barGap = 6;
-const barStatusColors = {
-  2: "#8dc11f",
-  3: "#e46b58",
-  4: "#e46b58",
-  5: "#e46b58"
+const getStatusColor = status => {
+  if (status === 200) {
+    return "#8dc11f";
+  }
+  return "#e46b58";
 };
 
 const maxLatency = 5000;
@@ -31,7 +31,7 @@ const Bar = ({ className, index, latency }) => {
 };
 
 const StyledBar = styled(Bar)`
-  fill: ${props => barStatusColors[Math.floor(props.status / 100)]};
+  fill: ${props => getStatusColor(props.status)};
 `;
 
 export default ({ className, checks }) => {
