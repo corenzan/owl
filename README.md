@@ -1,8 +1,8 @@
-![Owl](screenshot.png)
-
 # Owl
 
 > Owl is an open source self-hosted website monitor and status report dashboard.
+
+![Owl](screenshot.png)
 
 ## About
 
