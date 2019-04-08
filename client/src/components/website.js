@@ -28,7 +28,7 @@ export default ({ website }) => {
 
   useEffect(() => {
     request(`/websites/${website.id}/checks`).then(checks => {
-      setChecks(checks.slice(checks.length - 100));
+      setChecks(checks.slice(checks.length - 144));
     });
   }, []);
 
