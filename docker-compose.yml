@@ -9,7 +9,7 @@ services:
     environment:
       - API_URL=http://api:5000
       - API_KEY=123
-    command: go test -cover .
+    command: reflex -g *.go go test -cover .
   api:
     image: owl-go
     build: ./api
@@ -24,7 +24,7 @@ services:
       - API_KEY=123
       - VIRTUAL_HOST=api.owl.localhost
       - DATABASE_URL=postgres://postgres:123@db/postgres?sslmode=disable
-    command: go run .
+    command: reflex -g *.go -s go run .
   client:
     image: owl-node
     build: ./client

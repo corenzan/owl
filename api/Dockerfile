@@ -8,4 +8,4 @@ ADD . /usr/local/src
 
 ENV GO111MODULE on
 EXPOSE 5000
-ENTRYPOINT ["reflex", "-g", "*.go", "--"]
+
