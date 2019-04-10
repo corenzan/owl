@@ -1,7 +1,7 @@
 version: "3"
 services:
   agent:
-    image: owl-go
+    build: ./agent
     depends_on:
       - api
     volumes:
@@ -9,9 +9,7 @@ services:
     environment:
       - API_URL=http://api:5000
       - API_KEY=123
-    command: reflex -g *.go go test -cover .
   api:
-    image: owl-go
     build: ./api
     depends_on:
       - db
@@ -24,9 +22,7 @@ services:
       - API_KEY=123
       - VIRTUAL_HOST=api.owl.localhost
       - DATABASE_URL=postgres://postgres:123@db/postgres?sslmode=disable
-    command: reflex -g *.go -s go run .
   client:
-    image: owl-node
     build: ./client
     ports:
       - 3000

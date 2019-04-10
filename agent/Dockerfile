@@ -7,6 +7,6 @@ WORKDIR /usr/local/src
 ADD . /usr/local/src
 
 ENV GO111MODULE on
-EXPOSE 5000
 
-CMD ["reflex", "-g", "*.go", "-s", "--", "go", "run", "."]
+CMD ["reflex", "-g", "*.go", "--", "go", "test", "-cover", "."]
+
