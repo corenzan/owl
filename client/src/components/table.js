@@ -1,24 +1,29 @@
 import React from "react";
-import styled from "styled-components";
+import styled, { ThemeProvider } from "styled-components";
 
 const StyledTable = styled.table`
   width: 100%;
   table-layout: fixed;
 `;
 
-export const Table = ({ children }) => (
-  <StyledTable>
-    <tbody>{children}</tbody>
-  </StyledTable>
+export const Table = ({ theme, children }) => (
+  <ThemeProvider theme={{ default: theme || "regular" }}>
+    <StyledTable>
+      <tbody>{children}</tbody>
+    </StyledTable>
+  </ThemeProvider>
 );
 
-const StyledRow = styled.tr`
-  &:nth-child(2n + 1) {
-    background-color: #fbfaf9;
-  }
+export const Row = styled.tr`
+  ${props =>
+    props.isSelected
+      ? `background-color: #996459;`
+      : `&:nth-child(2n + 1) {
+    background-color: ${
+      props.theme.default === "negative" ? "#6f5156" : "#fdfaf7"
+    };
+  }`};
 `;
-
-export const Row = ({ children }) => <StyledRow>{children}</StyledRow>;
 
 const getCellCollapseDisplayValue = collapse => {
   switch (collapse) {
@@ -31,8 +36,8 @@ const getCellCollapseDisplayValue = collapse => {
   }
 };
 
-const StyledCell = styled.td`
-  height: 3rem;
+export const Cell = styled.td`
+  height: 3.75rem;
   line-height: 1.25;
   overflow: hidden;
   padding: 0 0.75rem;
@@ -44,37 +49,19 @@ const StyledCell = styled.td`
 
   &:first-child {
     padding-left: 1.5rem;
-    border-radius: 3rem 0 0 3rem;
   }
 
   &:last-child {
     padding-right: 1.5rem;
-    border-radius: 0 3rem 3rem 0;
   }
 
   small {
-    display: none;
+    display: block;
+    line-height: 1.5;
+    opacity: 0.75;
   }
 
   @media screen and (max-width: 768px) {
     display: ${props => getCellCollapseDisplayValue(props.collapse)};
-    height: 3.75rem;
-
-    &:first-child {
-      border-radius: 0;
-    }
-
-    &:last-child {
-      border-radius: 0;
-    }
-
-    small {
-      display: block;
-      line-height: 1.5;
-    }
   }
 `;
-
-export const Cell = ({ children, ...props }) => (
-  <StyledCell {...props}>{children}</StyledCell>
-);

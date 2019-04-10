@@ -1,6 +1,5 @@
 // import React from "react";
 import styled from "styled-components";
-import { ReactComponent as Owl } from "../owl.svg";
 
 const getStatusColor = status => {
   if (status === 200) {
@@ -9,8 +8,9 @@ const getStatusColor = status => {
   return "#e46b58";
 };
 
-export default styled(Owl)`
-  color: ${props => getStatusColor(props.status)};
-  height: 1.875rem;
-  width: 1.875rem;
+export default styled.div`
+  background-color: ${props => getStatusColor(props.status)};
+  border-radius: 0.375rem;
+  height: 1.25rem;
+  width: 1rem;
 `;
