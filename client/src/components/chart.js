@@ -9,18 +9,29 @@ const barGap = 1;
 const maxLatency = 5000;
 
 const StyledGroup = styled.g`
+  fill: transparent;
   pointer-events: bounding-box;
 
-  [data-status] {
-    fill: #e46b58;
+  rect {
+    transition: fill 0.125s ease-out;
   }
 
-  [data-status="200"] {
-    fill: #8dc11f;
+  .bad {
+    fill: hsl(8, 72%, 62%);
+  }
+  .ok {
+    fill: hsl(79, 72%, 44%);
   }
 
-  &:hover [data-status] {
-    fill: #61474c;
+  &:hover {
+    .bad {
+      /* fill: hsl(8, 82%, 72%); */
+      fill: #996459;
+    }
+    .ok {
+      /* fill: hsl(79, 82%, 54%); */
+      fill: #996459;
+    }
   }
 `;
 
@@ -36,25 +47,24 @@ const Bar = ({ index, status, latency }) => {
       <title>
         {status} — {(latency / 1000).toFixed(2)}s
       </title>
-      <rect width={barWidth} height={barMaxHeight} x={x} fill="transparent" />
+      <rect width={barWidth} height={barMaxHeight} x={x} />
       <rect
+        className="gap"
         width={barWidth}
         height={height}
         x={x}
         y={y}
         rx={cornerRadius}
         ry={cornerRadius}
-        fill="transparent"
       />
       <rect
-        className="bar"
+        className={status === 200 ? "bar ok" : "bar bad"}
         width={barWidth - barGap * 2}
         height={height - barGap * 2}
         x={x + barGap}
         y={y + barGap}
         rx={cornerRadius - barGap}
         ry={cornerRadius - barGap}
-        data-status={status}
       />
     </StyledGroup>
   );
