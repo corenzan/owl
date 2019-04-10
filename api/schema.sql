@@ -1,4 +1,3 @@
-drop table if exists websites cascade;
 create table websites (
     id serial primary key,
     timestamp timestamp not null default now(),
@@ -6,7 +5,6 @@ create table websites (
     status int default 0
 );
 
-drop table if exists checks cascade;
 create table checks (
     id serial primary key,
     timestamp timestamp not null default now(),
