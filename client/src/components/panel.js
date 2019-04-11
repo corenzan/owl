@@ -2,11 +2,11 @@
 import styled from "styled-components";
 
 export default styled.div`
-  flex: 1 0 auto;
+  flex: 0 1 100%;
   min-width: 20rem;
   position: relative;
 
-  ${props => (props.sidebar ? `flex-grow: 0;` : null)}
+  ${props => (props.sidebar ? `flex-basis: 0` : null)}
 
   ${props =>
     props.theme === "negative"

@@ -39,19 +39,15 @@ const getCellCollapseDisplayValue = collapse => {
 export const Cell = styled.td`
   height: 3.75rem;
   line-height: 1.25;
+  overflow: hidden;
   padding: 0 0.375rem;
   text-align: ${props => props.alignment || "center"};
-  vertical-align: middle;
-  width: ${props => props.width || "auto"};
-  white-space: nowrap;
-
-  ${props =>
-    props.truncate
-      ? `
-  overflow: hidden;
   text-overflow: ellipsis;
-  `
-      : null}
+  vertical-align: middle;
+  white-space: nowrap;
+  width: ${props => props.width || "auto"};
+
+  ${props => (props.truncate ? `max-width: 1px;` : null)}
 
   &:first-child {
     padding-left: 1.125rem;
