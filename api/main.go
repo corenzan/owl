@@ -20,18 +20,19 @@ var database *sql.DB
 type (
 	// Website ...
 	Website struct {
-		ID        int       `json:"id"`
-		Timestamp time.Time `json:"timestamp"`
-		URL       string    `json:"url"`
-		Status    int       `json:"status"`
+		ID      int       `json:"id"`
+		Updated time.Time `json:"updated"`
+		URL     string    `json:"url"`
+		Status  int       `json:"status"`
+		Uptime  int       `json:"uptime"`
 	}
 
 	// Check ...
 	Check struct {
-		ID        int       `json:"id"`
-		Timestamp time.Time `json:"timestamp"`
-		Status    int       `json:"status"`
-		Latency   int       `json:"latency"`
+		ID      int       `json:"id"`
+		Created time.Time `json:"created"`
+		Status  int       `json:"status"`
+		Latency int       `json:"latency"`
 	}
 )
 
@@ -41,12 +42,12 @@ func authenticate(key string, c echo.Context) (bool, error) {
 
 func handleNewWebsite(c echo.Context) error {
 	website := &Website{
-		Timestamp: time.Now(),
+		Updated: time.Now(),
 	}
 	if err := c.Bind(website); err != nil {
 		panic(err)
 	}
-	err := database.QueryRow(`insert into websites (timestamp, url) values ($1, $2) returning id;`, website.Timestamp, website.URL).Scan(&website.ID)
+	err := database.QueryRow(`insert into websites (updated, url) values ($1, $2) returning id;`, website.Updated, website.URL).Scan(&website.ID)
 	if err != nil {
 		panic(err)
 	}
@@ -57,15 +58,24 @@ func handleNewWebsite(c echo.Context) error {
 }
 
 func handleListWebsites(c echo.Context) error {
-	websites := []*Website{}
-	result, err := database.Query(`select id, timestamp, url, status from websites order by status desc, timestamp desc;`)
+	period := c.QueryParam("period")
+	if period == "" {
+		period = "1 day"
+	}
+	result, err := database.Query(`
+		select w.id, w.updated, w.url, w.status,
+		percentage(sum(case when c.status = 200 then 1 else 0 end), count(c.*)) as uptime
+		from websites as w left join checks as c on c.website_id = w.id and c.created > now() - $1::interval
+		group by w.id order by case when w.status = 200 then 0 else 1 end asc, w.updated desc;
+	`, period)
 	if err != nil {
 		panic(err)
 	}
 	defer result.Close()
+	websites := []*Website{}
 	for result.Next() {
 		website := &Website{}
-		err := result.Scan(&website.ID, &website.Timestamp, &website.URL, &website.Status)
+		err := result.Scan(&website.ID, &website.Updated, &website.URL, &website.Status, &website.Uptime)
 		if err != nil {
 			panic(err)
 		}
@@ -76,22 +86,22 @@ func handleListWebsites(c echo.Context) error {
 
 func handleNewCheck(c echo.Context) error {
 	website := &Website{}
-	err := database.QueryRow(`select id, timestamp, url, status from websites where id = $1;`, c.Param("id")).Scan(&website.ID, &website.Timestamp, &website.URL, &website.Status)
+	err := database.QueryRow(`select id, updated, url, status from websites where id = $1;`, c.Param("id")).Scan(&website.ID, &website.Updated, &website.URL, &website.Status)
 	if err != nil {
 		panic(err)
 	}
 	check := &Check{
-		Timestamp: time.Now(),
+		Created: time.Now(),
 	}
 	if err := c.Bind(check); err != nil {
 		panic(err)
 	}
-	err = database.QueryRow(`insert into checks (website_id, timestamp, status, latency) values ($1, $2, $3, $4) returning id;`, website.ID, time.Now(), check.Status, check.Latency).Scan(&check.ID)
+	err = database.QueryRow(`insert into checks (website_id, created, status, latency) values ($1, $2, $3, $4) returning id;`, website.ID, time.Now(), check.Status, check.Latency).Scan(&check.ID)
 	if err != nil {
 		panic(err)
 	}
 	if check.Status != website.Status {
-		_, err := database.Exec(`update websites set timestamp = $2, status = $3 where id = $1;`, website.ID, time.Now(), check.Status)
+		_, err := database.Exec(`update websites set updated = $2, status = $3 where id = $1;`, website.ID, time.Now(), check.Status)
 		if err != nil {
 			panic(err)
 		}
@@ -103,15 +113,19 @@ func handleNewCheck(c echo.Context) error {
 }
 
 func handleListChecks(c echo.Context) error {
-	checks := []*Check{}
-	result, err := database.Query(`select id, timestamp, status, latency from checks where website_id = $1 and timestamp > now() - interval '24 hours' order by timestamp asc;`, c.Param("id"))
+	period := c.QueryParam("period")
+	if period == "" {
+		period = "1 day"
+	}
+	result, err := database.Query(`select id, created, status, latency from checks where website_id = $1 and created > now() - $2::interval order by created asc;`, c.Param("id"), period)
 	if err != nil {
 		panic(err)
 	}
 	defer result.Close()
+	checks := []*Check{}
 	for result.Next() {
 		check := &Check{}
-		err := result.Scan(&check.ID, &check.Timestamp, &check.Status, &check.Latency)
+		err := result.Scan(&check.ID, &check.Created, &check.Status, &check.Latency)
 		if err != nil {
 			panic(err)
 		}
