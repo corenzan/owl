@@ -34,6 +34,14 @@ type (
 		Status  int       `json:"status"`
 		Latency int       `json:"latency"`
 	}
+
+	// HistoryEntry ...
+	HistoryEntry struct {
+		Changed  time.Time `json:"changed"`
+		Status   int       `json:"status"`
+		Duration int       `json:"duration"`
+		Latency  int       `json:"latency"`
+	}
 )
 
 func authenticate(key string, c echo.Context) (bool, error) {
@@ -134,6 +142,33 @@ func handleListChecks(c echo.Context) error {
 	return c.JSON(http.StatusOK, checks)
 }
 
+func handleListHistoryEntries(c echo.Context) error {
+	period := c.QueryParam("period")
+	if period == "" {
+		period = "1 month"
+	}
+	result, err := database.Query(`
+		with a as (select created, status, latency, lag(status) over (order by created desc) != status as changed from checks where website_id = $1 and created > now() - $2::interval order by created desc),
+		b as (select created, status, latency, sum(case when changed then 1 else 0 end) over (order by created desc) as change_id from a order by created desc),
+		c as (select min(created) as changed, min(status) as status, round(avg(latency)) as latency from b group by change_id order by changed desc)
+		select changed, status, round(extract(epoch from lag(changed, 1, current_timestamp) over (order by changed desc) - changed)) as duration, latency from c order by changed desc;
+	`, c.Param("id"), period)
+	if err != nil {
+		panic(err)
+	}
+	defer result.Close()
+	history := []*HistoryEntry{}
+	for result.Next() {
+		entry := &HistoryEntry{}
+		err := result.Scan(&entry.Changed, &entry.Status, &entry.Duration, &entry.Latency)
+		if err != nil {
+			panic(err)
+		}
+		history = append(history, entry)
+	}
+	return c.JSON(http.StatusOK, history)
+}
+
 func main() {
 	var err error
 	database, err = sql.Open("postgres", os.Getenv("DATABASE_URL"))
@@ -152,6 +187,7 @@ func main() {
 
 	e.GET("/websites", handleListWebsites)
 	e.GET("/websites/:id/checks", handleListChecks)
+	e.GET("/websites/:id/history", handleListHistoryEntries)
 
 	reqAuth := middleware.KeyAuth(authenticate)
 
