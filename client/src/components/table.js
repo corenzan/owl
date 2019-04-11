@@ -3,7 +3,7 @@ import styled, { ThemeProvider } from "styled-components";
 
 const StyledTable = styled.table`
   width: 100%;
-  table-layout: fixed;
+  /* table-layout: fixed; */
 `;
 
 export const Table = ({ theme, children }) => (
@@ -39,20 +39,26 @@ const getCellCollapseDisplayValue = collapse => {
 export const Cell = styled.td`
   height: 3.75rem;
   line-height: 1.25;
-  overflow: hidden;
-  padding: 0 0.75rem;
+  padding: 0 0.375rem;
   text-align: ${props => props.alignment || "center"};
-  text-overflow: ellipsis;
   vertical-align: middle;
-  white-space: nowrap;
   width: ${props => props.width || "auto"};
+  white-space: nowrap;
+
+  ${props =>
+    props.truncate
+      ? `
+  overflow: hidden;
+  text-overflow: ellipsis;
+  `
+      : null}
 
   &:first-child {
-    padding-left: 1.5rem;
+    padding-left: 1.125rem;
   }
 
   &:last-child {
-    padding-right: 1.5rem;
+    padding-right: 1.125rem;
   }
 
   small {

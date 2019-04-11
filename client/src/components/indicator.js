@@ -11,6 +11,8 @@ const getStatusColor = status => {
 export default styled.div`
   background-color: ${props => getStatusColor(props.status)};
   border-radius: 0.375rem;
+  display: inline-block;
   height: 1.25rem;
+  vertical-align: middle;
   width: 1rem;
 `;

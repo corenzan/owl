@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import Time from "react-time";
+import Moment from "react-moment";
 import styled from "styled-components";
 import Websites from "./websites";
 import Panel from "./panel";
@@ -26,7 +26,7 @@ export default () => {
           <Brand>
             <a href="/">Owl</a>
           </Brand>
-          <Time value={Date.now()} format="MMM D" />
+          <Moment format="MMM D" />
         </Topbar>
         <Websites
           selectedWebsite={selectedWebsite}
@@ -38,7 +38,6 @@ export default () => {
           <>
             <Topbar>
               <span>{selectedWebsite.url}</span>
-              <Time value={Date.now()} format="MMM Y" />
             </Topbar>
             <History website={selectedWebsite} />
           </>

@@ -6,7 +6,7 @@ export default styled.div`
   align-items: center;
   justify-content: space-between;
   height: 4.5rem;
-  padding: 0 1.5rem;
+  padding: 0 1.125rem;
   position: sticky;
   top: 0%;
   z-index: 10;

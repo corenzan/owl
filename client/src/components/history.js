@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
-import Time from "react-time";
+import Moment from "react-moment";
 import { Table, Row, Cell } from "./table";
 import Chart from "./chart";
 import { request } from "../api.js";
@@ -14,13 +14,24 @@ const ChartArea = styled.div`
   }
 `;
 
+const formattedDuration = duration => {
+  if (duration > 3600) {
+    return Math.round(duration / 3600) + "h";
+  }
+  return Math.round(duration / 60) + "m";
+};
+
 export default ({ website }) => {
   const [checks, setChecks] = useState([]);
 
   useEffect(() => {
-    request(`/websites/${website.id}/checks`).then(checks => {
-      setChecks(checks.slice(checks.length - 144));
-    });
+    request(`/websites/${website.id}/checks`).then(setChecks);
+  }, [website]);
+
+  const [history, setHistory] = useState([]);
+
+  useEffect(() => {
+    request(`/websites/${website.id}/history`).then(setHistory);
   }, [website]);
 
   return (
@@ -29,18 +40,14 @@ export default ({ website }) => {
         <Chart height="40" checks={checks} />
       </ChartArea>
       <Table>
-        {checks.map(check => (
-          <Row key={check.id}>
+        {history.map(entry => (
+          <Row key={entry.changed}>
             <Cell alignment="left">
-              <Time
-                value={check.timestamp}
-                format="MMM D, H:ma"
-                titleFormat="llll"
-              />
+              <Moment date={entry.changed} format="MMM D, H:ma" />
             </Cell>
-            <Cell>{check.status}</Cell>
-            <Cell>0</Cell>
-            <Cell alignment="right">0</Cell>
+            <Cell>{entry.status}</Cell>
+            <Cell>{formattedDuration(entry.duration)}</Cell>
+            <Cell alignment="right">{(entry.latency / 1000).toFixed(1)}s</Cell>
           </Row>
         ))}
       </Table>

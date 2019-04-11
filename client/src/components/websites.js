@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
-// import styled from "styled-components";
-import Time from "react-time";
+import Moment from "react-moment";
 import Indicator from "./indicator";
 import { Table, Row, Cell } from "./table";
 import { request } from "../api.js";
@@ -8,17 +7,17 @@ import { request } from "../api.js";
 const Website = ({ isSelected, website, onClick }) => {
   return (
     <Row onClick={onClick} isSelected={isSelected}>
-      <Cell width="3.25rem">
+      <Cell width="1">
         <Indicator status={website.status} />
       </Cell>
-      <Cell alignment="left">
+      <Cell alignment="left" truncate>
         <span>{website.url}</span>
         <small>
-          <Time value={website.timestamp} relative />
+          <Moment date={website.updated} fromNow />
         </small>
       </Cell>
-      <Cell width="5.25rem" alignment="right">
-        0%
+      <Cell width="1" alignment="right">
+        {website.uptime}%
       </Cell>
     </Row>
   );
