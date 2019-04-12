@@ -1,4 +1,4 @@
-export const request = path => {
+const request = path => {
   return fetch(process.env.REACT_APP_API_URL + path)
     .then(response => {
       if (!response.ok) {
@@ -7,4 +7,8 @@ export const request = path => {
       return response.json();
     })
     .catch(console.error);
+};
+
+export default {
+  request
 };

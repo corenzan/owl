@@ -1,0 +1,20 @@
+.hitbox {
+  fill: transparent;
+  pointer-events: bounding-box;
+}
+
+.gap {
+  transition: fill 0.125s ease-out;
+}
+
+.hitbox:hover .gap {
+  fill: #996459;
+}
+
+.bar {
+  fill: hsl(79, 72%, 44%);
+}
+
+.bar.red {
+  fill: hsl(8, 72%, 62%);
+}

@@ -1,0 +1,56 @@
+.history {
+  color: #5f454a;
+}
+
+.blank {
+  font-size: 1.25em;
+  padding: 3rem;
+}
+
+.topbar {
+  align-items: center;
+  background-color: #f0e7e5;
+  display: flex;
+  height: 4.5rem;
+  justify-content: space-between;
+  padding: 0;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.chart {
+  overflow: auto;
+  width: 100%;
+  padding: 1.125rem;
+}
+
+.chart::-webkit-scrollbar {
+  display: none;
+}
+
+.table {
+  table-layout: fixed;
+  width: 100%;
+}
+
+.table tr:nth-child(2n + 1) {
+  background-color: #f9f6f5;
+}
+
+.table td {
+  height: 3.5rem;
+  padding: 0 0.5rem;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.table td:first-child {
+  padding-left: 0.625rem;
+  text-align: left;
+}
+
+.table td:last-child {
+  padding-right: 0.625rem;
+  text-align: right;
+}
