@@ -74,7 +74,7 @@ func handleListWebsites(c echo.Context) error {
 		select w.id, w.updated, w.url, w.status,
 		percentage(sum(case when c.status = 200 then 1 else 0 end), count(c.*)) as uptime
 		from websites as w left join checks as c on c.website_id = w.id and c.created > now() - $1::interval
-		group by w.id order by case when w.status = 200 then 0 else 1 end asc, w.updated desc;
+		group by w.id order by (case when w.status = 200 then 1 else 0 end) asc, w.updated desc;
 	`, period)
 	if err != nil {
 		panic(err)
