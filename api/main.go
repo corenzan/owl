@@ -65,6 +65,24 @@ func handleNewWebsite(c echo.Context) error {
 	return nil
 }
 
+func handleGetWebsite(c echo.Context) error {
+	period := c.QueryParam("period")
+	if period == "" {
+		period = "1 day"
+	}
+	website := &Website{}
+	err := database.QueryRow(`
+		select w.id, w.updated, w.url, w.status,
+		percentage(sum(case when c.status = 200 then 1 else 0 end), count(c.*)) as uptime
+		from websites as w left join checks as c on c.website_id = w.id and c.created > now() - $1::interval
+		where w.id = $2 group by w.id;
+	`, period, c.Param("id")).Scan(&website.ID, &website.Updated, &website.URL, &website.Status, &website.Uptime)
+	if err != nil {
+		panic(err)
+	}
+	return c.JSON(http.StatusOK, website)
+}
+
 func handleListWebsites(c echo.Context) error {
 	period := c.QueryParam("period")
 	if period == "" {
@@ -186,6 +204,7 @@ func main() {
 	e.Use(middleware.CORS())
 
 	e.GET("/websites", handleListWebsites)
+	e.GET("/websites/:id", handleGetWebsite)
 	e.GET("/websites/:id/checks", handleListChecks)
 	e.GET("/websites/:id/history", handleListHistoryEntries)
 
