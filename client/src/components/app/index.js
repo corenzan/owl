@@ -1,32 +1,37 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import c from "classnames";
-import Route, { navigate } from "../route";
 import Sidebar from "../sidebar";
+import Welcome from "../welcome";
 import History from "../history";
 
 import style from "./style.module.css";
 
 export default () => {
-  const [isSidebarOpen, setSidebarOpen] = useState(
-    window.location.hash === "#/"
-  );
+  const [path, setPath] = useState(window.location.hash.slice(1) || "/");
+
+  useEffect(() => {
+    const onHashChange = e => {
+      setPath(window.location.hash.slice(1));
+    };
+    window.addEventListener("hashchange", onHashChange);
+
+    return () => {
+      window.removeEventListener("hashchange", onHashChange);
+    };
+  }, []);
 
   return (
     <div className={style.container}>
       <div
-        className={c(style.panel, style.sidebar, {
-          [style.open]: isSidebarOpen
+        className={c(style.sidebar, {
+          [style.open]: path === "/"
         })}
       >
-        <Sidebar closeSidebar={() => setSidebarOpen(false)} />
+        <Sidebar />
       </div>
-      <div className={c(style.panel, style.content)}>
-        <Route to="/">
-          <p>Select a website to display its history.</p>
-        </Route>
-        <Route to="/websites/:id">
-          <History openSidebar={() => setSidebarOpen(true)} />
-        </Route>
+      <div className={style.content}>
+        <Welcome path={path} />
+        <History path={path} />
       </div>
     </div>
   );

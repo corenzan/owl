@@ -2,15 +2,12 @@ import React, { useState, useEffect } from "react";
 import Website from "../website";
 import Moment from "react-moment";
 import c from "classnames";
-import { navigate } from "../route";
 import api from "../../api.js";
 
 import style from "./style.module.css";
 
-export default ({ closeSidebar }) => {
+export default ({ websiteId }) => {
   const [websites, setWebsites] = useState([]);
-
-  const [selectedWebsite, setSelectedWebsite] = useState(null);
 
   useEffect(() => {
     api.request("/websites").then(setWebsites);
@@ -31,15 +28,13 @@ export default ({ closeSidebar }) => {
           <div
             key={website.id}
             className={c(style.row, {
-              [style.selected]: selectedWebsite === website
+              [style.selected]: websiteId === website.id
             })}
           >
             <Website
               website={website}
               onClick={e => {
-                setSelectedWebsite(website);
-                closeSidebar();
-                navigate("/websites/" + website.id);
+                window.location.hash = "#/websites/" + website.id;
               }}
             />
           </div>
