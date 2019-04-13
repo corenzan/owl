@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from "react";
 import Moment from "react-moment";
+import c from "classnames";
 import Chart from "../chart";
 import Website from "../website";
+import { useRoute } from "../route";
 import api from "../../api.js";
 
 import style from "./style.module.css";
@@ -13,49 +15,69 @@ const formattedDuration = duration => {
   return Math.round(duration / 60) + "m";
 };
 
-export default ({ website }) => {
-  if (!website) {
-    return (
-      <div className={style.blank}>
-        Select a website to display its history.
-      </div>
-    );
-  }
+export default ({ openSidebar }) => {
+  const route = useRoute();
+
+  const [website, setWebsite] = useState(null);
+
+  useEffect(() => {
+    if (route.match) {
+      api.request("/websites/" + route.match.id).then(setWebsite);
+    }
+  }, [route]);
 
   const [checks, setChecks] = useState([]);
 
   useEffect(() => {
+    if (!website) {
+      return;
+    }
     api.request(`/websites/${website.id}/checks`).then(setChecks);
   }, [website]);
 
   const [history, setHistory] = useState([]);
 
   useEffect(() => {
+    if (!website) {
+      return;
+    }
     api.request(`/websites/${website.id}/history`).then(setHistory);
   }, [website]);
 
   return (
     <div className={style.history}>
-      <div className={style.topbar}>
-        <Website website={website} />
-      </div>
-      <div className={style.chart}>
-        <Chart height="40" checks={checks} />
-      </div>
-      <table className={style.table}>
-        <tbody>
-          {history.map(entry => (
-            <tr key={entry.changed}>
-              <td>
-                <Moment date={entry.changed} format="MMM DD, HH:mma" />
-              </td>
-              <td>{entry.status}</td>
-              <td>{formattedDuration(entry.duration)}</td>
-              <td alignment="right">{(entry.latency / 1000).toFixed(1)}s</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      {website ? (
+        <>
+          <div className={style.topbar} onClick={e => openSidebar()}>
+            <Website website={website} />
+          </div>
+          <div className={style.chart}>
+            <Chart height="40" checks={checks} />
+          </div>
+          <table className={style.table}>
+            <tbody>
+              {history.map(entry => (
+                <tr key={entry.changed}>
+                  <td>
+                    <Moment date={entry.changed} format="MMM DD, HH:mma" />
+                  </td>
+                  <td
+                    className={c(style.status, {
+                      [style.bad]: entry.status !== 200
+                    })}
+                  >
+                    {entry.status}
+                  </td>
+                  <td>{formattedDuration(entry.duration)}</td>
+                  <td className={style.latency}>
+                    {(entry.latency / 1000).toFixed(1)}s
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </>
+      ) : null}
     </div>
   );
 };

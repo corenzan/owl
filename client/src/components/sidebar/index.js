@@ -2,12 +2,15 @@ import React, { useState, useEffect } from "react";
 import Website from "../website";
 import Moment from "react-moment";
 import c from "classnames";
+import { navigate } from "../route";
 import api from "../../api.js";
 
 import style from "./style.module.css";
 
-export default ({ isOpen, selectedWebsite, onWebsiteChange }) => {
+export default ({ closeSidebar }) => {
   const [websites, setWebsites] = useState([]);
+
+  const [selectedWebsite, setSelectedWebsite] = useState(null);
 
   useEffect(() => {
     api.request("/websites").then(setWebsites);
@@ -17,7 +20,7 @@ export default ({ isOpen, selectedWebsite, onWebsiteChange }) => {
     <div className={style.sidebar}>
       <div className={style.topbar}>
         <h1 className={style.brand}>
-          <a href="/">Owl</a>
+          <a href="/#/">Owl</a>
         </h1>
         <span>
           <Moment format="MMM Y" />
@@ -33,7 +36,11 @@ export default ({ isOpen, selectedWebsite, onWebsiteChange }) => {
           >
             <Website
               website={website}
-              onClick={e => onWebsiteChange(website)}
+              onClick={e => {
+                setSelectedWebsite(website);
+                closeSidebar();
+                navigate("/websites/" + website.id);
+              }}
             />
           </div>
         ))}

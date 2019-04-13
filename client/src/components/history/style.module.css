@@ -43,6 +43,7 @@
   padding: 0 0.5rem;
   text-align: center;
   vertical-align: middle;
+  white-space: nowrap;
 }
 
 .table td:first-child {
@@ -53,4 +54,27 @@
 .table td:last-child {
   padding-right: 0.625rem;
   text-align: right;
+}
+
+.status {
+  color: #8dc11f;
+}
+
+.status.bad {
+  color: #e46b58;
+}
+
+@media screen and (max-width: 768px) {
+  .table td:first-child {
+    width: 10rem;
+  }
+
+  .table td:last-child {
+    display: none;
+  }
+
+  .table td:nth-last-child(2) {
+    padding-right: 0.625rem;
+    text-align: right;
+  }
 }
