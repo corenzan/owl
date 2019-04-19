@@ -68,7 +68,7 @@ func handleNewWebsite(c echo.Context) error {
 func handleGetWebsite(c echo.Context) error {
 	period := c.QueryParam("period")
 	if period == "" {
-		period = "1 day"
+		period = "1 month"
 	}
 	website := &Website{}
 	err := database.QueryRow(`
@@ -86,7 +86,7 @@ func handleGetWebsite(c echo.Context) error {
 func handleListWebsites(c echo.Context) error {
 	period := c.QueryParam("period")
 	if period == "" {
-		period = "1 day"
+		period = "1 month"
 	}
 	result, err := database.Query(`
 		select w.id, w.updated, w.url, w.status,
@@ -141,7 +141,7 @@ func handleNewCheck(c echo.Context) error {
 func handleListChecks(c echo.Context) error {
 	period := c.QueryParam("period")
 	if period == "" {
-		period = "1 day"
+		period = "1 month"
 	}
 	result, err := database.Query(`select id, created, status, latency from checks where website_id = $1 and created > now() - $2::interval order by created asc;`, c.Param("id"), period)
 	if err != nil {
