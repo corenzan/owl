@@ -39,7 +39,7 @@ type (
 	HistoryEntry struct {
 		Changed  time.Time `json:"changed"`
 		Status   int       `json:"status"`
-		Duration int       `json:"duration"`
+		Duration float64       `json:"duration"`
 		Latency  int       `json:"latency"`
 	}
 )
