@@ -17,7 +17,16 @@ export default ({ website, onClick }) => {
           <Moment date={website.updated} fromNow />
         </small>
       </div>
-      <div className={c(style.segment, style.uptime)}>{website.uptime}%</div>
+      <div
+        className={c(style.segment, style.uptime)}
+        title={
+          (website.uptime % 1 > 0
+            ? website.uptime.toFixed(4)
+            : website.uptime) + "%"
+        }
+      >
+        {Math.floor(website.uptime)}%
+      </div>
     </div>
   );
 };
