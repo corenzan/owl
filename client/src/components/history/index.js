@@ -9,6 +9,9 @@ import api from "../../api.js";
 import style from "./style.module.css";
 
 const formattedDuration = duration => {
+  if (duration > 3600 * 24 * 2) {
+    return Math.round(duration / (3600 * 24)) + "d";
+  }
   if (duration > 3600) {
     return Math.round(duration / 3600) + "h";
   }
