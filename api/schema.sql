@@ -14,9 +14,9 @@ create table if not exists checks (
 );
 
 -- 2019-04-10
-create or replace function public.percentage(a numeric, b numeric) 
+create or replace function public.percentage(a numeric, b numeric)
 returns numeric language sql as $function$
-    select case when b = 0 then 0 else round(100.0 / b * a) end;
+    select case when b = 0 then 0 else 100.0 / b * a end;
 $function$;
 
 -- 2019-04-11 11:23:31

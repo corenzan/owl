@@ -24,7 +24,7 @@ type (
 		Updated time.Time `json:"updated"`
 		URL     string    `json:"url"`
 		Status  int       `json:"status"`
-		Uptime  int       `json:"uptime"`
+		Uptime  float64   `json:"uptime"`
 	}
 
 	// Check ...
@@ -39,7 +39,7 @@ type (
 	HistoryEntry struct {
 		Changed  time.Time `json:"changed"`
 		Status   int       `json:"status"`
-		Duration float64       `json:"duration"`
+		Duration float64   `json:"duration"`
 		Latency  int       `json:"latency"`
 	}
 )
