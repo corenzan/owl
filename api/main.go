@@ -68,15 +68,15 @@ func handleNewWebsite(c echo.Context) error {
 func handleGetWebsite(c echo.Context) error {
 	period := c.QueryParam("period")
 	if period == "" {
-		period = "1 month"
+		period = time.Now().Format("Jan 2 2006")
 	}
 	website := &Website{}
 	err := database.QueryRow(`
 		select w.id, w.updated, w.url, w.status,
 		percentage(sum(case when c.status = 200 then 1 else 0 end), count(c.*)) as uptime
-		from websites as w left join checks as c on c.website_id = w.id and c.created > now() - $1::interval
-		where w.id = $2 group by w.id;
-	`, period, c.Param("id")).Scan(&website.ID, &website.Updated, &website.URL, &website.Status, &website.Uptime)
+		from websites as w left join checks as c on c.website_id = w.id and c.created >= date_trunc('month', $2::date)
+		where w.id = $1 group by w.id limit 1;
+	`, c.Param("id"), period).Scan(&website.ID, &website.Updated, &website.URL, &website.Status, &website.Uptime)
 	if err != nil {
 		panic(err)
 	}
@@ -86,12 +86,12 @@ func handleGetWebsite(c echo.Context) error {
 func handleListWebsites(c echo.Context) error {
 	period := c.QueryParam("period")
 	if period == "" {
-		period = "1 month"
+		period = time.Now().Format("Jan 2 2006")
 	}
 	result, err := database.Query(`
 		select w.id, w.updated, w.url, w.status,
 		percentage(sum(case when c.status = 200 then 1 else 0 end), count(c.*)) as uptime
-		from websites as w left join checks as c on c.website_id = w.id and c.created > now() - $1::interval
+		from websites as w left join checks as c on c.website_id = w.id and c.created >= date_trunc('month', $1::date)
 		group by w.id order by (case when w.status = 200 then 1 else 0 end) asc, w.updated desc;
 	`, period)
 	if err != nil {
@@ -141,9 +141,9 @@ func handleNewCheck(c echo.Context) error {
 func handleListChecks(c echo.Context) error {
 	period := c.QueryParam("period")
 	if period == "" {
-		period = "1 month"
+		period = time.Now().Format("Jan 2 2006")
 	}
-	result, err := database.Query(`select id, created, status, latency from checks where website_id = $1 and created > now() - $2::interval order by created asc;`, c.Param("id"), period)
+	result, err := database.Query(`select id, created, status, latency from checks where website_id = $1 and created >= date_trunc('month', $2::date) order by created asc;`, c.Param("id"), period)
 	if err != nil {
 		panic(err)
 	}
@@ -163,10 +163,10 @@ func handleListChecks(c echo.Context) error {
 func handleListHistoryEntries(c echo.Context) error {
 	period := c.QueryParam("period")
 	if period == "" {
-		period = "1 month"
+		period = time.Now().Format("Jan 2 2006")
 	}
 	result, err := database.Query(`
-		with a as (select created, status, latency, lag(status) over (order by created desc) != status as changed from checks where website_id = $1 and created > now() - $2::interval order by created desc),
+		with a as (select created, status, latency, lag(status) over (order by created desc) != status as changed from checks where website_id = $1 and created >= date_trunc('month', $2::date) order by created desc),
 		b as (select created, status, latency, sum(case when changed then 1 else 0 end) over (order by created desc) as change_id from a order by created desc),
 		c as (select min(created) as changed, min(status) as status, round(avg(latency)) as latency from b group by change_id order by changed desc)
 		select changed, status, round(extract(epoch from lag(changed, 1, current_timestamp) over (order by changed desc) - changed)) as duration, latency from c order by changed desc;
