@@ -23,29 +23,38 @@ export default ({ path }) => {
 
   const [website, setWebsite] = useState(null);
 
-  useEffect(() => {
-    if (websiteId) {
-      api.request("/websites/" + websiteId).then(setWebsite);
-    }
-  }, [websiteId]);
+  useEffect(
+    () => {
+      if (websiteId) {
+        api.request("/websites/" + websiteId).then(setWebsite);
+      }
+    },
+    [websiteId]
+  );
 
   const [checks, setChecks] = useState([]);
 
-  useEffect(() => {
-    if (!website) {
-      return;
-    }
-    api.request(`/websites/${website.id}/checks`).then(setChecks);
-  }, [website]);
+  useEffect(
+    () => {
+      if (!website) {
+        return;
+      }
+      api.request(`/websites/${website.id}/checks`).then(setChecks);
+    },
+    [website]
+  );
 
   const [history, setHistory] = useState([]);
 
-  useEffect(() => {
-    if (!website) {
-      return;
-    }
-    api.request(`/websites/${website.id}/history`).then(setHistory);
-  }, [website]);
+  useEffect(
+    () => {
+      if (!website) {
+        return;
+      }
+      api.request(`/websites/${website.id}/history`).then(setHistory);
+    },
+    [website]
+  );
 
   if (!website) {
     return null;
