@@ -64,7 +64,7 @@ func TestAgentCheck(t *testing.T) {
 		return &http.Response{
 			StatusCode: 200,
 			Body:       ioutil.NopCloser(bytes.NewBufferString(`OK`)),
-			Header:     make(http.Header),
+			Header:     http.Header{},
 		}
 	})
 
@@ -73,7 +73,7 @@ func TestAgentCheck(t *testing.T) {
 		URL: "https://website",
 	})
 
-	if history[0].Method != "HEAD" {
+	if history[0].Method != "GET" {
 		t.Fail()
 	}
 	if history[0].URL.String() != "https://website" {

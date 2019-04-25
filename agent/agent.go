@@ -2,11 +2,14 @@ package agent
 
 import (
 	"bytes"
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
+	"net/http/httptrace"
 	"time"
 )
 
@@ -19,8 +22,14 @@ type (
 
 	// Check ...
 	Check struct {
-		Status  int           `json:"status"`
-		Latency time.Duration `json:"latency"`
+		Status          int           `json:"status"`
+		DNSDelay        time.Duration `json:"dnsDelay"`
+		TLSDelay        time.Duration `json:"tlsDelay"`
+		ConnectionDelay time.Duration `json:"connectionDelay"`
+		NetworkDelay    time.Duration `json:"networkDelay"`
+		RequestDelay    time.Duration `json:"requestDelay"`
+		ResponseDelay   time.Duration `json:"responseDelay"`
+		ResponseSize    int64         `json:"responseSize"`
 	}
 
 	// Agent ...
@@ -54,18 +63,55 @@ func (a *Agent) apiRequest(method, path string, body io.Reader) (*http.Response,
 
 // Check ...
 func (a *Agent) Check(w *Website) error {
-	check := &Check{
-		Status: 999,
+	timeline := &struct {
+		DNS, Connection, TLS, Request, Network, Response time.Time
+	}{}
+	check := &Check{}
+	trace := &httptrace.ClientTrace{
+		DNSStart: func(_ httptrace.DNSStartInfo) {
+			timeline.DNS = time.Now()
+		},
+		DNSDone: func(_ httptrace.DNSDoneInfo) {
+			check.DNSDelay = time.Since(timeline.DNS) / time.Millisecond
+		},
+		ConnectStart: func(_, _ string) {
+			timeline.Connection = time.Now()
+		},
+		ConnectDone: func(_, _ string, err error) {
+			timeline.Request = time.Now()
+			check.ConnectionDelay = time.Since(timeline.Connection) / time.Millisecond
+		},
+		TLSHandshakeStart: func() {
+			timeline.TLS = time.Now()
+		},
+		TLSHandshakeDone: func(_ tls.ConnectionState, err error) {
+			if err != nil {
+				check.TLSDelay = time.Since(timeline.TLS) / time.Millisecond
+			}
+		},
+		WroteRequest: func(w httptrace.WroteRequestInfo) {
+			timeline.Network = time.Now()
+			check.RequestDelay = time.Since(timeline.Request)/time.Millisecond - check.TLSDelay
+		},
+		GotFirstResponseByte: func() {
+			timeline.Response = time.Now()
+			check.NetworkDelay = time.Since(timeline.Network) / time.Millisecond
+		},
 	}
-	checkpoint := time.Now()
-	resp, err := a.client.Head(w.URL)
-	// TODO: we still need to surface this error but differently
-	// than the others beucase although it indicates a failure
-	// to check the site, it could very well be the agent's fault.
-	if err == nil {
-		check.Status = resp.StatusCode
+	req, err := http.NewRequest("GET", w.URL, nil)
+	if err != nil {
+		return nil
 	}
-	check.Latency = time.Since(checkpoint) / time.Millisecond
+	req = req.WithContext(httptrace.WithClientTrace(req.Context(), trace))
+	resp, err := a.client.Do(req)
+	if err != nil {
+		return err
+	}
+	io.Copy(ioutil.Discard, resp.Body)
+	resp.Body.Close()
+	check.ResponseDelay = time.Since(timeline.Response) / time.Millisecond
+	check.ResponseSize = resp.ContentLength
+
 	payload := &bytes.Buffer{}
 	err = json.NewEncoder(payload).Encode(check)
 	if err != nil {
