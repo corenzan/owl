@@ -11,9 +11,9 @@ const barGap = 1;
 
 const maxLatency = 5000;
 
-const Bar = ({ index, created, status, latency }) => {
+const Bar = ({ index, checked, statusCode, duration }) => {
   const height = Math.round(
-    (latency / maxLatency) * (barMaxHeight - barMinHeight) + barMinHeight
+    (duration / maxLatency) * (barMaxHeight - barMinHeight) + barMinHeight
   );
   const x = index * barWidth;
   const y = Math.round(barMaxHeight - height);
@@ -21,8 +21,8 @@ const Bar = ({ index, created, status, latency }) => {
   return (
     <g className={style.hitbox}>
       <title>
-        {moment(created).format("MMM DD Y, HH:mma")} — {status} —{" "}
-        {(latency / 1000).toFixed(2)}s
+        {moment(checked).format("MMM DD Y, HH:mma")} — {statusCode} —{" "}
+        {(duration / 1000).toFixed(2)}s
       </title>
       <rect width={barWidth} height={barMaxHeight} x={x} />
       <rect
@@ -35,7 +35,7 @@ const Bar = ({ index, created, status, latency }) => {
         ry={cornerRadius}
       />
       <rect
-        className={c(style.bar, { [style.red]: status !== 200 })}
+        className={c(style.bar, { [style.red]: statusCode !== 200 })}
         width={barWidth - barGap * 2}
         height={height - barGap * 2}
         x={x + barGap}
@@ -57,9 +57,9 @@ export default ({ height, checks }) => {
         <Bar
           key={index}
           index={index}
-          created={check.created}
-          status={check.status}
-          latency={check.latency}
+          checked={check.checked}
+          statusCode={check.statusCode}
+          duration={check.duration}
         />
       ))}
     </svg>

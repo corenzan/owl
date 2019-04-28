@@ -5,13 +5,14 @@
 
 .sidebar,
 .content {
+  max-width: 100%;
   -webkit-overflow-scrolling: touch;
   height: 100%;
   overflow: auto;
 }
 
 .sidebar {
-  flex: 0 0 20rem;
+  flex: 0 0 24rem;
 }
 
 .content {

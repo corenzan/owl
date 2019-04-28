@@ -1,22 +1,21 @@
 version: "3"
 services:
   agent:
-    build: ./agent
-    depends_on:
-      - api
+    build: .
     volumes:
-      - ./agent:/usr/local/src
-    environment:
-      - API_URL=http://api:5000
-      - API_KEY=123
-  api:
-    build: ./api
+      - .:/go/src/github.com/corenzan/owl
+    working_dir: /go/src/github.com/corenzan/owl/agent
+    command: reflex -g *.go -g ./api/*.go -- go test -cover . ./api
+  server:
+    build: .
+    volumes:
+      - .:/go/src/github.com/corenzan/owl
+    working_dir: /go/src/github.com/corenzan/owl/server
+    command: reflex -g *.go -s -- go run .
     depends_on:
       - db
     ports:
       - 5000
-    volumes:
-      - ./api:/usr/local/src
     environment:
       - PORT=5000
       - API_KEY=123
@@ -32,8 +31,9 @@ services:
       - VIRTUAL_HOST=owl.localhost
       - REACT_APP_API_URL=http://api.owl.localhost
   db:
-    image: postgres:11.1-alpine
+    image: postgres:11-alpine
     ports:
       - 5432
     environment:
       - POSTGRES_PASSWORD=123
+      - PGPASSWORD=123

@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Moment from "react-moment";
+import moment from "moment";
+import { Link } from "wouter";
 import match from "../../match";
 import c from "classnames";
 import Chart from "../chart";
@@ -8,28 +10,28 @@ import api from "../../api.js";
 
 import style from "./style.module.css";
 
-const formattedDuration = duration => {
-  if (duration > 3600 * 24 * 2) {
-    return Math.round(duration / (3600 * 24)) + "d";
-  }
-  if (duration > 3600) {
-    return Math.round(duration / 3600) + "h";
-  }
-  return Math.round(duration / 60) + "m";
+const pluralize = (n, single, plural) => {
+  return n + " " + (n != 1 ? plural || single + "s" : single);
 };
 
-export default ({ path }) => {
-  const { websiteId } = match("/websites/:websiteId", path);
+const formattedDuration = duration => {
+  if (duration > 3600 * 24 * 2) {
+    return pluralize(Math.round(duration / (3600 * 24)), "day");
+  }
+  if (duration > 3600) {
+    return pluralize(Math.round(duration / 3600), "hour");
+  }
+  return pluralize(Math.round(duration / 60), "minute");
+};
 
+export default ({ params }) => {
   const [website, setWebsite] = useState(null);
 
   useEffect(
     () => {
-      if (websiteId) {
-        api.request("/websites/" + websiteId).then(setWebsite);
-      }
+      api.request("/websites/" + params.id).then(setWebsite);
     },
-    [websiteId]
+    [params.id]
   );
 
   const [checks, setChecks] = useState([]);
@@ -39,19 +41,11 @@ export default ({ path }) => {
       if (!website) {
         return;
       }
-      api.request(`/websites/${website.id}/checks`).then(setChecks);
-    },
-    [website]
-  );
-
-  const [history, setHistory] = useState([]);
-
-  useEffect(
-    () => {
-      if (!website) {
-        return;
-      }
-      api.request(`/websites/${website.id}/history`).then(setHistory);
+      api
+        .request(
+          `/websites/${website.id}/checks?mo=` + moment().format("MMM+Y")
+        )
+        .then(setChecks);
     },
     [website]
   );
@@ -62,33 +56,27 @@ export default ({ path }) => {
 
   return (
     <div className={style.history}>
-      <div
-        className={style.topbar}
-        onClick={e => (window.location.hash = "#/")}
-      >
+      <Link className={style.topbar} href="/">
         <Website website={website} />
-      </div>
+      </Link>
       <div className={style.chart}>
         <Chart height="40" checks={checks} />
       </div>
       <table className={style.table}>
         <tbody>
-          {history.map(entry => (
-            <tr key={entry.changed}>
+          {checks.map(check => (
+            <tr key={check.checked}>
               <td>
-                <Moment date={entry.changed} format="MMM DD, HH:mma" />
+                <Moment date={check.checked} format="MMM DD, HH:mma" />
               </td>
               <td
                 className={c(style.status, {
-                  [style.bad]: entry.status !== 200
+                  [style.red]: check.statusCode !== 200
                 })}
               >
-                {entry.status}
+                {check.statusCode}
               </td>
-              <td>{formattedDuration(entry.duration)}</td>
-              <td className={style.latency}>
-                {(entry.latency / 1000).toFixed(1)}s
-              </td>
+              <td>{(check.duration / 1000).toFixed(2)}s</td>
             </tr>
           ))}
         </tbody>

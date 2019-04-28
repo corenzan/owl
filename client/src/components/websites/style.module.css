@@ -1,4 +1,4 @@
-.sidebar {
+.container {
   background-color: #7e5c62;
   color: #f0e7e5;
 }
@@ -23,6 +23,7 @@
 }
 
 .row {
+  display: block;
   background-color: #6f5156;
 }
 

@@ -12,7 +12,8 @@
     "react-scripts": "2.1.8",
     "react-timeago": "^4.4.0",
     "resetize": "^26.0.0",
-    "route-parser": "^0.0.5"
+    "route-parser": "^0.0.5",
+    "wouter": "^1.1.0"
   },
   "scripts": {
     "start": "react-scripts start",

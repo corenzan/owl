@@ -1,37 +1,23 @@
 import React, { useState, useEffect } from "react";
+import { Route, useLocation } from "wouter";
 import c from "classnames";
-import Sidebar from "../sidebar";
+import Websites from "../websites";
 import Welcome from "../welcome";
 import History from "../history";
 
 import style from "./style.module.css";
 
 export default () => {
-  const [path, setPath] = useState(window.location.hash.slice(1) || "/");
-
-  useEffect(() => {
-    const onHashChange = e => {
-      setPath(window.location.hash.slice(1));
-    };
-    window.addEventListener("hashchange", onHashChange);
-
-    return () => {
-      window.removeEventListener("hashchange", onHashChange);
-    };
-  }, []);
+  const [path] = useLocation();
 
   return (
     <div className={style.container}>
-      <div
-        className={c(style.sidebar, {
-          [style.open]: path === "/"
-        })}
-      >
-        <Sidebar />
+      <div className={c(style.sidebar, path === "/" ? style.open : null)}>
+        <Websites />
       </div>
       <div className={style.content}>
-        <Welcome path={path} />
-        <History path={path} />
+        <Route path="/" component={Welcome} />
+        <Route path="/websites/:id" component={History} />
       </div>
     </div>
   );

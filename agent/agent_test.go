@@ -5,6 +5,8 @@ import (
 	"io/ioutil"
 	"net/http"
 	"testing"
+
+	"github.com/corenzan/owl/agent/api"
 )
 
 type RoundTripFunc func(req *http.Request) *http.Response
@@ -21,45 +23,17 @@ func NewTestClient(fn RoundTripFunc) *http.Client {
 
 func TestNew(t *testing.T) {
 	a := New("https://api", "123")
-	if a.endpoint != "https://api" {
+	if a.api.Endpoint != "https://api" {
 		t.Fail()
 	}
-	if a.key != "123" {
+	if a.api.Key != "123" {
 		t.Fail()
 	}
-}
-func TestAgentAPIRequest(t *testing.T) {
-	a := New("https://api", "123")
-
-	method := "GET"
-	path := "/"
-
-	a.client = NewTestClient(func(req *http.Request) *http.Response {
-		if req.Method != method {
-			t.Fail()
-		}
-		if req.URL.String() != a.endpoint+path {
-			t.Fail()
-		}
-		if req.Header.Get("Authorization") != "Bearer "+a.key {
-			t.Fail()
-		}
-		return &http.Response{
-			StatusCode: 200,
-			Body:       ioutil.NopCloser(bytes.NewBufferString(`OK`)),
-			Header:     make(http.Header),
-		}
-	})
-
-	a.apiRequest(method, path, nil)
 }
 
 func TestAgentCheck(t *testing.T) {
-	a := New("https://api", "123")
-
 	history := []*http.Request{}
-
-	a.client = NewTestClient(func(req *http.Request) *http.Response {
+	c := NewTestClient(func(req *http.Request) *http.Response {
 		history = append(history, req)
 		return &http.Response{
 			StatusCode: 200,
@@ -68,11 +42,18 @@ func TestAgentCheck(t *testing.T) {
 		}
 	})
 
-	a.Check(&Website{
+	a := New("https://api", "123")
+	a.client = c
+	a.api.Client = c
+
+	check, err := a.Check(&api.Website{
 		ID:  1,
 		URL: "https://website",
 	})
 
+	if err != nil {
+		t.Fail()
+	}
 	if history[0].Method != "GET" {
 		t.Fail()
 	}
@@ -80,6 +61,11 @@ func TestAgentCheck(t *testing.T) {
 		t.Fail()
 	}
 
+	err = a.Report(check)
+
+	if err != nil {
+		t.Fail()
+	}
 	if history[1].Method != "POST" {
 		t.Fail()
 	}
