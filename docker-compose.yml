@@ -1,16 +1,14 @@
 version: "3"
 services:
   agent:
-    build: .
+    build: ./agent
     volumes:
       - .:/go/src/github.com/corenzan/owl
-    working_dir: /go/src/github.com/corenzan/owl/agent
     command: reflex -g *.go -g ./api/*.go -- go test -cover . ./api
-  server:
-    build: .
+  api:
+    build: ./api
     volumes:
       - .:/go/src/github.com/corenzan/owl
-    working_dir: /go/src/github.com/corenzan/owl/server
     command: reflex -g *.go -s -- go run .
     depends_on:
       - db

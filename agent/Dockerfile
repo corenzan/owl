@@ -1,12 +1,9 @@
 FROM golang:1.12-alpine
 
-RUN apk add --no-cache git 
+RUN apk add --no-cache git build-base
 RUN go get github.com/cespare/reflex
 
-WORKDIR /usr/local/src
-ADD . /usr/local/src
+WORKDIR /go/src/github.com/corenzan/owl/agent
 
 ENV GO111MODULE on
-
-CMD ["reflex", "-g", "*.go", "--", "go", "test", "-cover", "."]
 

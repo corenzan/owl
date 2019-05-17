@@ -1,7 +1,7 @@
 // +heroku goVersion go1.12
 // +heroku install .
 
-module github.com/corenzan/owl/server
+module github.com/corenzan/owl/api
 
 require (
 	github.com/cockroachdb/apd v1.1.0 // indirect

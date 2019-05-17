@@ -4,52 +4,60 @@ import c from "classnames";
 
 import style from "./style.module.css";
 
-const barMaxHeight = 40;
-const barMinHeight = 4;
-const barWidth = 6;
-const barGap = 1;
-
 const maxLatency = 5000;
 
-const Bar = ({ index, checked, statusCode, duration }) => {
-  const height = Math.round(
-    (duration / maxLatency) * (barMaxHeight - barMinHeight) + barMinHeight
+const Bar = ({ index, check, minHeight, maxHeight, maxWidth, stroke }) => {
+  const outerMaxHeight = maxHeight;
+  const outerHeight = Math.round(
+    (check.duration / maxLatency) * (maxHeight - minHeight) + minHeight
   );
-  const x = index * barWidth;
-  const y = Math.round(barMaxHeight - height);
-  const cornerRadius = barWidth / 2;
+  const outerWidth = maxWidth;
+  const outerRadius = Math.round(outerWidth / 2);
+  const innerHeight = outerHeight - stroke * 2;
+  const innerWidth = outerWidth - stroke * 2;
+  const innerMaxHeight = maxHeight - stroke * 2;
+  const innerRadius = Math.round(innerWidth / 2);
+  const outerX = index * outerWidth;
+  const outerY = Math.round(outerMaxHeight - outerHeight);
+  const innerX = outerX + stroke;
+  const innerY = outerY + stroke;
+
   return (
-    <g className={style.hitbox}>
-      <title>
-        {moment(checked).format("MMM DD Y, HH:mma")} — {statusCode} —{" "}
-        {(duration / 1000).toFixed(2)}s
-      </title>
-      <rect width={barWidth} height={barMaxHeight} x={x} />
+    <g>
       <rect
-        className={style.gap}
-        width={barWidth}
-        height={height}
-        x={x}
-        y={y}
-        rx={cornerRadius}
-        ry={cornerRadius}
+        width={outerWidth}
+        height={outerMaxHeight}
+        x={outerX}
+        fill="transparent"
       />
       <rect
-        className={c(style.bar, { [style.red]: statusCode !== 200 })}
-        width={barWidth - barGap * 2}
-        height={height - barGap * 2}
-        x={x + barGap}
-        y={y + barGap}
-        rx={cornerRadius - barGap}
-        ry={cornerRadius - barGap}
+        width={outerWidth}
+        height={outerHeight}
+        x={outerX}
+        y={outerY}
+        rx={outerRadius}
+        ry={outerRadius}
+        fill="white"
+      />
+      <rect
+        width={innerWidth}
+        height={innerHeight}
+        x={innerX}
+        y={innerY}
+        rx={innerRadius}
+        ry={innerRadius}
+        fill="blue"
       />
     </g>
   );
 };
 
 export default ({ height, checks }) => {
-  const w = checks.length * barWidth;
-  const viewBox = `0 0 ${w} ${barMaxHeight}`;
+  const minHeight = 2;
+  const maxWidth = 6;
+  const barStroke = 1;
+  const w = checks.length * maxWidth;
+  const viewBox = `0 0 ${w} ${height}`;
 
   return (
     <svg role="img" viewBox={viewBox} height={height || "auto"}>
@@ -57,9 +65,11 @@ export default ({ height, checks }) => {
         <Bar
           key={index}
           index={index}
-          checked={check.checked}
-          statusCode={check.statusCode}
-          duration={check.duration}
+          check={check}
+          minHeight={minHeight}
+          maxHeight={height}
+          maxWidth={maxWidth}
+          stroke={barStroke}
         />
       ))}
     </svg>
