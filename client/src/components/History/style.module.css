@@ -1,76 +1,76 @@
 .blank {
-  font-size: 1.25em;
-  padding: 3rem;
+    font-size: 1.25em;
+    padding: 3rem;
 }
 
 .topbar {
-  align-items: center;
-  background-color: #f0e7e5;
-  display: flex;
-  height: 4.5rem;
-  justify-content: space-between;
-  padding: 0;
-  position: sticky;
-  top: 0;
-  z-index: 10;
+    align-items: center;
+    background-color: var(--sienna-light-background);
+    display: flex;
+    height: 4.5rem;
+    justify-content: space-between;
+    padding: 0;
+    position: sticky;
+    top: 0;
+    z-index: 10;
 }
 
 .chart {
-  overflow: auto;
-  width: 100%;
-  padding: 1.125rem;
+    overflow: auto;
+    width: 100%;
+    padding: 1.125rem;
 }
 
 .chart::-webkit-scrollbar {
-  display: none;
+    display: none;
 }
 
 .table {
-  table-layout: fixed;
-  width: 100%;
+    table-layout: fixed;
+    width: 100%;
 }
 
 .table tr:nth-child(2n + 1) {
-  background-color: #f9f6f5;
+    background-color: var(--khaki-light-background);
 }
 
 .table td {
-  height: 3.5rem;
-  padding: 0 0.5rem;
-  text-align: center;
-  vertical-align: middle;
-  white-space: nowrap;
+    height: 3.5rem;
+    padding: 0 0.5rem;
+    text-align: center;
+    vertical-align: middle;
+    white-space: nowrap;
 }
 
 .table td:first-child {
-  padding-left: 0.625rem;
-  text-align: left;
+    padding-left: 0.625rem;
+    text-align: left;
 }
 
 .table td:last-child {
-  padding-right: 0.625rem;
-  text-align: right;
+    padding-right: 0.625rem;
+    text-align: right;
 }
 
 .status {
-  color: #8dc11f;
+    color: var(--positive);
 }
 
 .status.red {
-  color: #e46b58;
+    color: var(--negative);
 }
 
 @media screen and (max-width: 768px) {
-  .table td:first-child {
-    width: 10rem;
-  }
+    .table td:first-child {
+        width: 10rem;
+    }
 
-  .table td:last-child {
-    display: none;
-  }
+    .table td:last-child {
+        display: none;
+    }
 
-  .table td:nth-last-child(2) {
-    padding-right: 0.625rem;
-    text-align: right;
-  }
+    .table td:nth-last-child(2) {
+        padding-right: 0.625rem;
+        text-align: right;
+    }
 }

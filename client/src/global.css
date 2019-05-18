@@ -3,18 +3,21 @@
  * https://coolors.co/7f5c62-9a6458-e7bf95-ffce00-ff9200
  * 
  * Blackish, grayish, white, positive, and negative.
- * https://coolors.co/3b3447-5c536a-ffffff-9EC400-f15524
+ * https://coolors.co/3b3447-5c546a-ffffff-9EC400-f15524
  *
  */
 :root {
     --blackish: #3b3447;
-    --grayish: #5c536a;
+    --grayish: #5c546a;
     --white: #ffffff;
     --positive: #9ec400;
     --negative: #f15524;
-    --dirt: #7f5c62;
+
+    --chocolate: #7f5c62;
     --sienna: #9a6458;
+    --sienna-light-background: #f2ebea;
     --khaki: #e7bf95;
+    --khaki-light-background: #fdfbf8;
     --banana: #ffce00;
     --orange: #ff9200;
 }
@@ -26,7 +29,7 @@ body {
 
 body {
     font-family: Arimo, sans-serif;
-    color: #3b3447;
+    color: var(--blackish);
 }
 
 #root {

@@ -1,33 +1,33 @@
 .menu {
-  background-color: #7e5c62;
-  color: #f0e7e5;
+    background-color: var(--chocolate);
+    color: #f0e7e5;
 }
 
 .topbar {
-  align-items: center;
-  background-color: #7e5c62;
-  display: flex;
-  height: 4.5rem;
-  justify-content: space-between;
-  padding: 0 1.125rem;
-  position: sticky;
-  top: 0;
-  z-index: 10;
+    align-items: center;
+    background-color: var(--chocolate);
+    display: flex;
+    height: 4.5rem;
+    justify-content: space-between;
+    padding: 0 1.125rem;
+    position: sticky;
+    top: 0;
+    z-index: 10;
 }
 
 .brand {
-  font-size: 1.5em;
+    font-size: 1.5em;
 }
 
 .row {
-  display: block;
-  background-color: #6f5156;
+    display: block;
+    background-color: hsla(0, 0%, 0%, 12.5%);
 }
 
 .row:nth-child(2n + 1) {
-  background-color: #61474c;
+    background-color: hsla(0, 0%, 0%, 25%);
 }
 
 .row.selected {
-  background-color: #996459;
+    background-color: var(--sienna);
 }
