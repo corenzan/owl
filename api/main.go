@@ -68,11 +68,18 @@ func handleGetWebsite(c echo.Context) error {
 	}
 	sql := `select id, url from websites where id = $1 limit 1;`
 	if err := db.QueryRow(sql, c.Param("id")).Scan(&website.ID, &website.URL); err != nil {
+		if err == pgx.ErrNoRows {
+			return echo.NewHTTPError(http.StatusUnauthorized)
+		}
 		panic(err)
 	}
 	sql = `select checked_at, status_code, duration, breakdown from checks where website_id = $1 order by checked_at desc limit 1;`
 	if err := db.QueryRow(sql, c.Param("id")).Scan(&website.LastCheck.Checked, &website.LastCheck.StatusCode, &website.LastCheck.Duration, &website.LastCheck.Breakdown); err != nil {
-		panic(err)
+		if err == pgx.ErrNoRows {
+			website.LastCheck = nil
+		} else {
+			panic(err)
+		}
 	}
 	if err := c.JSON(http.StatusOK, website); err != nil {
 		panic(err)
