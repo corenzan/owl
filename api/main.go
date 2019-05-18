@@ -28,10 +28,10 @@ type (
 
 	// Breakdown ...
 	Breakdown struct {
-		DNS        time.Duration `json:"dns"`
-		Connection time.Duration `json:"connection"`
-		TLS        time.Duration `json:"tls"`
-		Wait       time.Duration `json:"wait"`
+		DNS         time.Duration `json:"dns"`
+		Connection  time.Duration `json:"connection"`
+		TLS         time.Duration `json:"tls"`
+		Application time.Duration `json:"application"`
 	}
 
 	// Check ...
@@ -222,6 +222,6 @@ func main() {
 
 	e.Logger.Fatal(e.Start(":" + os.Getenv("PORT")))
 
-	// Wait for the shutdown or a second signal.
+	// Wait for shutdown or a second signal.
 	<-shutdown
 }

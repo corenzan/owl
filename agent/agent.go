@@ -20,7 +20,7 @@ type (
 
 	// Timeline ...
 	Timeline struct {
-		Connection, DNS, Dial, TLS, Request, Wait, Response time.Time
+		Connection, DNS, Dial, TLS, Request, Application, Response time.Time
 	}
 )
 
@@ -61,10 +61,10 @@ func (a *Agent) Check(website *api.Website) (*api.Check, error) {
 			check.Breakdown.TLS = time.Since(timeline.TLS) / time.Millisecond
 		},
 		WroteRequest: func(_ httptrace.WroteRequestInfo) {
-			timeline.Wait = time.Now()
+			timeline.Application = time.Now()
 		},
 		GotFirstResponseByte: func() {
-			check.Breakdown.Wait = time.Since(timeline.Wait) / time.Millisecond
+			check.Breakdown.Application = time.Since(timeline.Application) / time.Millisecond
 		},
 	}
 	req, err := http.NewRequest("GET", website.URL, nil)

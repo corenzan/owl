@@ -20,7 +20,7 @@ type (
 		DNS        time.Duration `json:"dns"`        // DNSStart-DNSDone
 		Connection time.Duration `json:"connection"` // ConnectStart-ConnectDone
 		TLS        time.Duration `json:"tls"`        // TLSHandshakeStart-TLSHandshakeDone
-		Wait       time.Duration `json:"wait"`       // WroteRequest-GotFirstResponseByte
+		Application       time.Duration `json:"application"`       // WroteRequest-GotFirstResponseByte
 	}
 
 	// Check ...
@@ -41,7 +41,7 @@ type (
 
 // Total ...
 func (b *Breakdown) Total() time.Duration {
-	return b.DNS + b.TLS + b.Connection + b.Wait
+	return b.DNS + b.TLS + b.Connection + b.Application
 }
 
 // New ...
