@@ -37,7 +37,7 @@ type (
 	// Check ...
 	Check struct {
 		ID         int           `json:"id,omitempty"`
-		Checked    time.Time     `json:"checked"`
+		Checked    time.Time     `json:"checkedAt"`
 		WebsiteID  int           `json:"websiteId,omitempty"`
 		StatusCode int           `json:"statusCode"`
 		Duration   time.Duration `json:"duration"`
