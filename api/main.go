@@ -152,10 +152,7 @@ func handleNewCheck(c echo.Context) error {
 func handleListChecks(c echo.Context) error {
 	mo := c.QueryParam("mo")
 	if mo == "" {
-		if err := c.JSON(http.StatusBadRequest, nil); err != nil {
-			panic(err)
-		}
-		return nil
+		return echo.NewHTTPError(http.StatusBadRequest, "missing parameter 'mo'")
 	}
 	sql := `select id, checked_at, status_code, duration, breakdown from checks where website_id = $1 and timestamptz_in_of(checked_at, '1 month -1 second', date_trunc('month', $2::timestamptz)) order by checked_at desc;`
 	q, err := db.Query(sql, c.Param("id"), "1 "+mo)
