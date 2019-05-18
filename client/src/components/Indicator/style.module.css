@@ -1,10 +1,10 @@
 .indicator {
     background-color: var(--negative);
-    border-radius: 0.375rem;
+    border-radius: 2px;
     display: inline-block;
     height: 1.25rem;
     vertical-align: middle;
-    width: 0.5rem;
+    width: 8px;
 }
 
 .green {

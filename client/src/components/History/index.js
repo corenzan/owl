@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useContext } from "react";
 import Moment from "react-moment";
 import moment from "moment";
+import { Link } from "wouter";
 import c from "classnames";
 import { appContext } from "../App";
 import Chart from "../Chart";
 import Website from "../Website";
-import Duration from "../Duration";
+//import Duration from "../Duration";
 import api from "../../api.js";
 
 import style from "./style.module.css";
@@ -33,9 +34,11 @@ export default ({ params }) => {
 
     return (
         <div className={style.history}>
-            <a className={style.topbar} href="/">
-                <Website website={website} />
-            </a>
+            <Link href="/">
+                <a className={style.topbar} href="#">
+                    <Website website={website} />
+                </a>
+            </Link>
             <div className={style.chart}>
                 <Chart checks={checks} />
             </div>

@@ -1,6 +1,5 @@
-
 const pluralize = (n, single, plural) => {
-    return n + " " + (n != 1 ? plural || single + "s" : single);
+    return n + " " + (n !== 1 ? plural || single + "s" : single);
 };
 
 export default ({ duration }) => {

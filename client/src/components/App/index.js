@@ -11,7 +11,7 @@ import style from "./style.module.css";
 export const appContext = createContext();
 
 export default () => {
-    const [date, setDate] = useState(moment().format("MMM YYYY"));
+    const [date] = useState(moment());
     const [path] = useLocation();
 
     return (
