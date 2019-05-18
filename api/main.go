@@ -108,19 +108,18 @@ func handleGetWebsiteUptime(c echo.Context) error {
 
 func handleListWebsites(c echo.Context) error {
 	websites := []*Website{}
-	sql := `select websites.id, url, checked_at, status_code, duration, breakdown from websites left join checks on checks.id = (select id from checks where website_id = websites.id order by checked_at desc limit 1);`
+	sql := `select id, url from websites;`
 	q, err := db.Query(sql)
 	if err != nil {
 		panic(err)
 	}
 	defer q.Close()
 	for q.Next() {
-		website := &Website{
-			LastCheck: &Check{
-				Breakdown: &Breakdown{},
-			},
+		website := &Website{}
+		err := q.Scan(&website.ID, &website.URL)
+		if err != nil {
+			panic(err)
 		}
-		q.Scan(&website.ID, &website.URL, &website.LastCheck.Checked, &website.LastCheck.StatusCode, &website.LastCheck.Duration, &website.LastCheck.Breakdown)
 		websites = append(websites, website)
 	}
 	if err := c.JSON(http.StatusOK, websites); err != nil {
