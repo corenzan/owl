@@ -207,16 +207,21 @@ func main() {
 	e.POST("/websites", handleNewWebsite, authenticate)
 	e.POST("/websites/:id/checks", handleNewCheck, authenticate)
 
-	shutdown := make(chan os.Signal)
+	shutdown := make(chan os.Signal, 2)
 	signal.Notify(shutdown, syscall.SIGTERM, syscall.SIGINT)
 	go func() {
+		// Wait for the signal.
 		<-shutdown
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 		if err := e.Shutdown(ctx); err != nil {
 			e.Logger.Fatal(err)
 		}
+		close(shutdown)
 	}()
 
 	e.Logger.Fatal(e.Start(":" + os.Getenv("PORT")))
+
+	// Wait for the shutdown or a second signal.
+	<-shutdown
 }
