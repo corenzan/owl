@@ -3,32 +3,31 @@
   height: 100%;
 }
 
-.sidebar,
-.content {
-  max-width: 100%;
+.main,
+.aside {
   -webkit-overflow-scrolling: touch;
   height: 100%;
+  max-width: 100%;
   overflow: auto;
 }
 
-.sidebar {
+.aside {
   flex: 0 0 24rem;
 }
 
-.content {
+.main {
   flex: 0 1 100%;
-  color: #5f454a;
 }
 
 @media screen and (max-width: 768px) {
-  .sidebar {
+  .aside {
     display: none;
     position: absolute;
     width: 100%;
     z-index: 100;
   }
 
-  .sidebar.open {
+  .aside.open {
     display: block;
   }
 }

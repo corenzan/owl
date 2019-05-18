@@ -1,4 +1,4 @@
-.container {
+.menu {
   background-color: #7e5c62;
   color: #f0e7e5;
 }
@@ -17,9 +17,6 @@
 
 .brand {
   font-size: 1.5em;
-}
-
-.list {
 }
 
 .row {

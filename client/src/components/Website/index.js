@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
-import Indicator from "../indicator";
 import Moment from "react-moment";
 import moment from "moment";
 import c from "classnames";
+import Indicator from "../Indicator";
 import api from "../../api.js";
 
 import style from "./style.module.css";
@@ -21,12 +21,12 @@ export default ({ website, onClick }) => {
   return (
     <div className={style.website} onClick={onClick}>
       <div className={style.segment}>
-        <Indicator status={website.lastCheck.statusCode} />
+        <Indicator lastCheck={website.lastCheck} />
       </div>
       <div className={c(style.segment, style.name)}>
         {website.url}
         <small className={style.timestamp}>
-          <Moment date={website.lastCheck.checked} fromNow />
+          {website.lastCheck ? <Moment date={website.lastCheck.checked} fromNow /> : '-'}
         </small>
       </div>
       <div className={c(style.segment, style.uptime)}>

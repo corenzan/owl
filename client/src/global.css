@@ -1,12 +1,34 @@
+/* 
+ * Dark brown, chocolate, khaki, yellow, and orange.
+ * https://coolors.co/7f5c62-9a6458-e7bf95-ffce00-ff9200
+ * 
+ * Blackish, grayish, white, positive, and negative.
+ * https://coolors.co/3b3447-5c536a-ffffff-9EC400-f15524
+ *
+ */
+:root {
+    --blackish: #3b3447;
+    --grayish: #5c536a;
+    --white: #ffffff;
+    --positive: #9ec400;
+    --negative: #f15524;
+    --dirt: #7f5c62;
+    --sienna: #9a6458;
+    --khaki: #e7bf95;
+    --banana: #ffce00;
+    --orange: #ff9200;
+}
+
 html,
 body {
-  height: 100%;
+    height: 100%;
 }
 
 body {
-  font-family: Arimo;
+    font-family: Arimo, sans-serif;
+    color: #3b3447;
 }
 
 #root {
-  height: 100%;
+    height: 100%;
 }

@@ -1,0 +1,16 @@
+.indicator {
+    background-color: var(--negative);
+    border-radius: 0.375rem;
+    display: inline-block;
+    height: 1.25rem;
+    vertical-align: middle;
+    width: 0.5rem;
+}
+
+.green {
+    background-color: var(--positive);
+}
+
+.gray {
+    background-color: #8f879b;
+}
