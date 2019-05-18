@@ -1,12 +1,10 @@
 import React from "react";
-import moment from "moment";
-import c from "classnames";
 
 import style from "./style.module.css";
 
 const maxDuration = 5000;
-const height = 100;
-const barWidth = 10;
+const height = 64;
+const barWidth = 11;
 const barStroke = 2;
 
 const Bar = ({ index, check }) => {
@@ -16,13 +14,13 @@ const Bar = ({ index, check }) => {
     const dnsRatio = check.breakdown.dns / check.duration;
     const connectionRatio = check.breakdown.connection / check.duration;
     const tlsRatio = check.breakdown.tls / check.duration;
-    const waitRatio = check.breakdown.wait / check.duration;
+    // const applicationRatio = check.breakdown.application / check.duration;
 
     return (
         <g>
             <title>
-                DNS: {check.breakdown.dns}ms, Connection: {check.breakdown.connection}ms, TLS: {check.breakdown.tls}ms, Wait:{" "}
-                {check.breakdown.wait}ms, Total: {check.duration}ms, Status: {check.statusCode}
+                DNS: {check.breakdown.dns}ms, Connection: {check.breakdown.connection}ms, TLS: {check.breakdown.tls}ms,
+                Application: {check.breakdown.application}ms, Total: {check.duration}ms, Status: {check.statusCode}
             </title>
             <defs>
                 <linearGradient id={"fill" + index} x2="0" y2="1">
