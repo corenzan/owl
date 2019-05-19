@@ -121,13 +121,17 @@ func handleGetWebsiteUptime(c echo.Context) error {
 }
 
 func handleListWebsites(c echo.Context) error {
-	websites := []*Website{}
 	sql := `select id, updated_at, status, url from websites order by status desc;`
+	checkable := c.QueryParam("checkable")
+	if checkable != "" {
+		sql = `select id, updated_at, status, url from websites where status != 'maintenance' order by status desc;`
+	}
 	q, err := db.Query(sql)
 	if err != nil {
 		panic(err)
 	}
 	defer q.Close()
+	websites := []*Website{}
 	for q.Next() {
 		website := &Website{}
 		err := q.Scan(&website.ID, &website.Updated, &website.Status, &website.URL)
