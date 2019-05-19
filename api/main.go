@@ -190,7 +190,7 @@ func handleListChecks(c echo.Context) error {
 	if httpErr != nil {
 		return httpErr
 	}
-	sql := `select id, checked_at, status_code, duration, breakdown from checks where website_id = $1 and checked_at between $2::timestamptz and $3::timestamptz order by checked_at desc;`
+	sql := `select id, checked_at, status_code, duration, breakdown from checks where website_id = $1 and checked_at between $2::timestamptz and $3::timestamptz order by checked_at asc;`
 	q, err := db.Query(sql, c.Param("id"), from, to)
 	if err != nil {
 		panic(err)
