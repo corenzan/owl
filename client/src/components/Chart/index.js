@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useState, useRef, useEffect } from "react";
 import c from "classnames";
 
 import style from "./style.module.css";
+import moment from "moment";
 
 const maxDuration = 5000;
 const height = 64;
@@ -20,8 +21,9 @@ const Bar = ({ index, check }) => {
     return (
         <g className={style.area}>
             <title>
-                DNS: {check.breakdown.dns}ms, Connection: {check.breakdown.connection}ms, TLS: {check.breakdown.tls}ms,
-                Application: {check.breakdown.application}ms, Total: {check.duration}ms, Status: {check.statusCode}
+                {moment(check.checkedAt).format("MMM D, H:mm")} / Status: {check.statusCode} / DNS: {check.breakdown.dns}ms /
+                Connection: {check.breakdown.connection}ms / TLS: {check.breakdown.tls}ms / Application:{" "}
+                {check.breakdown.application}ms / Total: {check.duration}ms
             </title>
             <defs>
                 <linearGradient id={"fill" + index} x2="0" y2="1">
@@ -53,13 +55,35 @@ const Bar = ({ index, check }) => {
     );
 };
 
+const calculateAvailableWidth = element => {
+    const style = getComputedStyle(element.parentElement);
+    return element.parentElement.clientWidth - parseInt(style.paddingLeft, 10) - parseInt(style.paddingRight, 10);
+};
+
 export default ({ checks }) => {
-    const width = checks.length * barWidth;
+    const [availableWidth, setAvailableWidth] = useState(0);
+    const [offset, setOffset] = useState(0);
+
+    const root = useRef(null);
+
+    useEffect(() => {
+        setAvailableWidth(calculateAvailableWidth(root.current));
+        const onResize = e => {
+            setAvailableWidth(calculateAvailableWidth(root.current));
+        };
+        window.addEventListener("resize", onResize);
+        return () => {
+            window.removeEventListener("resize", onResize);
+        };
+    }, []);
+
+    const limit = Math.floor(availableWidth / barWidth);
+    const width = barWidth * limit;
     const viewBox = `0 0 ${width} ${height}`;
 
     return (
-        <svg role="img" viewBox={viewBox} height={height}>
-            {checks.map((check, index) => (
+        <svg role="img" ref={root} viewBox={viewBox} height={height} width={width}>
+            {checks.slice(offset, offset + limit).map((check, index) => (
                 <Bar key={index} index={index} check={check} />
             ))}
         </svg>

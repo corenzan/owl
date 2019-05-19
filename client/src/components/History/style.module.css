@@ -16,13 +16,8 @@
 }
 
 .chart {
-    overflow: auto;
     width: 100%;
     padding: 1.125rem;
-}
-
-.chart::-webkit-scrollbar {
-    display: none;
 }
 
 .table {
