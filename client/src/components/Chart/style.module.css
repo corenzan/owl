@@ -1,13 +1,12 @@
 .area {
 }
 
-.area:hover .bar,
-.area:hover .overlay {
+.area:hover .bar {
     opacity: 0.5;
 }
 
 .overlay {
-    mix-blend-mode: color;
+    mix-blend-mode: overlay;
     fill: var(--positive);
 }
 
@@ -17,4 +16,6 @@
 
 .bar {
     transition: all 0.25s ease-out;
+    rx: 1;
+    ry: 1;
 }
