@@ -26,15 +26,15 @@ const Bar = ({ index, check }) => {
                 {check.breakdown.application}ms / Total: {check.duration}ms
             </title>
             <defs>
-                <linearGradient id={"fill" + index} x2="0" y2="1">
-                    <stop offset={0 + "%"} stopColor="#999" />
-                    <stop offset={dnsRatio * 100 + "%"} stopColor="#999" />
-                    <stop offset={dnsRatio * 100 + "%"} stopColor="#ccc" />
-                    <stop offset={(dnsRatio + connectionRatio) * 100 + "%"} stopColor="#ccc" />
-                    <stop offset={(dnsRatio + connectionRatio) * 100 + "%"} stopColor="#999" />
-                    <stop offset={(dnsRatio + connectionRatio + tlsRatio) * 100 + "%"} stopColor="#999" />
-                    <stop offset={(dnsRatio + connectionRatio + tlsRatio) * 100 + "%"} stopColor="#666" />
-                    <stop offset={100 + "%"} stopColor="#666" />
+                <linearGradient id={"fill" + index} x1="0%" y1="100%" x2="0%" y2="0%">
+                    <stop offset={0 + "%"} stopColor="#444" />
+                    <stop offset={dnsRatio * 100 + "%"} stopColor="#444" />
+                    <stop offset={dnsRatio * 100 + "%"} stopColor="#666" />
+                    <stop offset={(dnsRatio + connectionRatio) * 100 + "%"} stopColor="#666" />
+                    <stop offset={(dnsRatio + connectionRatio) * 100 + "%"} stopColor="#888" />
+                    <stop offset={(dnsRatio + connectionRatio + tlsRatio) * 100 + "%"} stopColor="#888" />
+                    <stop offset={(dnsRatio + connectionRatio + tlsRatio) * 100 + "%"} stopColor="#aaa" />
+                    <stop offset={100 + "%"} stopColor="#aaa" />
                 </linearGradient>
             </defs>
             <rect
