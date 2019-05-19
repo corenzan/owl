@@ -101,13 +101,13 @@ func handleGetWebsite(c echo.Context) error {
 }
 
 func handleGetWebsiteUptime(c echo.Context) error {
-	mo := c.QueryParam("mo")
-	if mo == "" {
-		return echo.NewHTTPError(http.StatusBadRequest, "missing parameter 'mo'")
+	month := c.QueryParam("month")
+	if month == "" {
+		return echo.NewHTTPError(http.StatusBadRequest, "missing parameter 'month'")
 	}
 	uptime := 0.0
 	sql := `select 100 - percentage(sum(case when status_code = 200 then 0 else 1 end), floor(date_part('days', date_trunc('month', $2::timestamptz) + '1 month - 1 second'::interval) * 24 * 60 / $3)::numeric) from checks where website_id = $1 and timestamptz_in_of(checked_at, '1 month -1 second', date_trunc('month', $2::timestamptz));`
-	if err := db.QueryRow(sql, c.Param("id"), "1 "+mo, checkInterval).Scan(&uptime); err != nil {
+	if err := db.QueryRow(sql, c.Param("id"), "1 "+month, checkInterval).Scan(&uptime); err != nil {
 		panic(err)
 	}
 	if err := c.JSON(http.StatusOK, uptime); err != nil {
@@ -160,12 +160,12 @@ func handleNewCheck(c echo.Context) error {
 }
 
 func handleListChecks(c echo.Context) error {
-	mo := c.QueryParam("mo")
-	if mo == "" {
-		return echo.NewHTTPError(http.StatusBadRequest, "missing parameter 'mo'")
+	month := c.QueryParam("month")
+	if month == "" {
+		return echo.NewHTTPError(http.StatusBadRequest, "missing parameter 'month'")
 	}
 	sql := `select id, checked_at, status_code, duration, breakdown from checks where website_id = $1 and timestamptz_in_of(checked_at, '1 month -1 second', date_trunc('month', $2::timestamptz)) order by checked_at desc;`
-	q, err := db.Query(sql, c.Param("id"), "1 "+mo)
+	q, err := db.Query(sql, c.Param("id"), "1 "+month)
 	if err != nil {
 		panic(err)
 	}
@@ -185,12 +185,12 @@ func handleListChecks(c echo.Context) error {
 }
 
 func handleListHistory(c echo.Context) error {
-	mo := c.QueryParam("mo")
-	if mo == "" {
-		return echo.NewHTTPError(http.StatusBadRequest, "missing parameter 'mo'")
+	month := c.QueryParam("month")
+	if month == "" {
+		return echo.NewHTTPError(http.StatusBadRequest, "missing parameter 'month'")
 	}
 	sql := `select checked_at, status_code, duration from checks where website_id = $1 and timestamptz_in_of(checked_at, '1 month -1 second', date_trunc('month', $2::timestamptz)) order by checked_at desc;`
-	q, err := db.Query(sql, c.Param("id"), "1 "+mo)
+	q, err := db.Query(sql, c.Param("id"), "1 "+month)
 	if err != nil {
 		panic(err)
 	}

@@ -12,7 +12,7 @@ export default ({ website, onClick }) => {
     const [lastCheck, setLastCheck] = useState({});
 
     useEffect(() => {
-        api.request("/websites/" + website.id + "/uptime?mo=" + moment().format("MMM+Y")).then(setUptime);
+        api.request("/websites/" + website.id + "/uptime?month=" + moment().format("MMM+Y")).then(setUptime);
     }, []);
 
     useEffect(() => {

@@ -24,7 +24,7 @@ export default ({ params }) => {
         if (!website) {
             return;
         }
-        api.request(`/websites/${website.id}/checks?mo=` + moment(date).format("MMM+Y")).then(setChecks);
+        api.request(`/websites/${website.id}/checks?month=` + moment(date).format("MMM+Y")).then(setChecks);
     }, [website]);
 
     const [history, setHistory] = useState([]);
@@ -32,7 +32,7 @@ export default ({ params }) => {
         if (!website) {
             return;
         }
-        api.request(`/websites/${website.id}/history?mo=` + moment(date).format("MMM+Y")).then(setHistory);
+        api.request(`/websites/${website.id}/history?month=` + moment(date).format("MMM+Y")).then(setHistory);
     }, [website]);
 
     if (!website) {
