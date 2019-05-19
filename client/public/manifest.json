@@ -1,8 +1,8 @@
 {
     "name": "Owl",
     "short_name": "Owl",
-    "start_url": "https://owl.crz.li",
     "orientation": "portrait",
+    "start_url": "/?source=pwa",
     "icons": [
         {
             "src": "/android-chrome-192x192.png",
