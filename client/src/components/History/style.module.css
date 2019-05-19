@@ -47,6 +47,7 @@
 }
 
 .status {
+    font-weight: bolder;
     color: var(--positive);
 }
 
