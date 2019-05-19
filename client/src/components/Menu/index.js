@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { Link, useRoute } from "wouter";
 import Moment from "react-moment";
 import c from "classnames";
 import Website from "../Website";
 import api from "../../api.js";
+import { appContext } from "../App";
 
 import style from "./style.module.css";
 
@@ -14,6 +15,7 @@ const isSelected = (website, params) => {
 export default () => {
     const [, params] = useRoute("/websites/:id");
     const [list, update] = useState([]);
+    const { period } = useContext(appContext);
 
     useEffect(() => {
         api.request("/websites").then(update);
@@ -26,7 +28,7 @@ export default () => {
                     <Link href="/">Owl</Link>
                 </h1>
                 <span>
-                    <Moment format="MMM Y" />
+                    <Moment value={period[0]} format="MMM Y" />
                 </span>
             </div>
             <div className={style.list}>

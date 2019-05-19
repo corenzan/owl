@@ -12,7 +12,7 @@ import api from "../../api.js";
 import style from "./style.module.css";
 
 export default ({ params }) => {
-    const { date } = useContext(appContext);
+    const { period } = useContext(appContext);
 
     const [website, setWebsite] = useState(null);
     useEffect(() => {
@@ -24,7 +24,7 @@ export default ({ params }) => {
         if (!website) {
             return;
         }
-        api.request(`/websites/${website.id}/checks?month=` + moment(date).format("MMM+Y")).then(setChecks);
+        api.request(`/websites/${website.id}/checks?from=${period[0].format()}&to=${period[1].format()}`).then(setChecks);
     }, [website]);
 
     const [history, setHistory] = useState([]);
@@ -32,7 +32,7 @@ export default ({ params }) => {
         if (!website) {
             return;
         }
-        api.request(`/websites/${website.id}/history?month=` + moment(date).format("MMM+Y")).then(setHistory);
+        api.request(`/websites/${website.id}/history?from=${period[0].format()}&to=${period[1].format()}`).then(setHistory);
     }, [website]);
 
     if (!website) {

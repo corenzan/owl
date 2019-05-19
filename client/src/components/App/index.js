@@ -11,11 +11,18 @@ import style from "./style.module.css";
 export const appContext = createContext();
 
 export default () => {
-    const [date] = useState(moment());
+    const [period] = useState([
+        moment()
+            .utc()
+            .startOf("month"),
+        moment()
+            .utc()
+            .endOf("month")
+    ]);
     const [path] = useLocation();
 
     return (
-        <appContext.Provider value={{ date }}>
+        <appContext.Provider value={{ period }}>
             <div className={style.container}>
                 <aside className={c(style.aside, path === "/" ? style.open : null)}>
                     <Menu />

@@ -18,7 +18,7 @@ import (
 
 // This should/will come from somewhere else. Likely a configuration.
 // For now I'll leave it here. Also, it's in minutes.
-const checkInterval = 10
+var checkInterval float64 = 10
 
 var db *pgx.ConnPool
 
@@ -89,16 +89,31 @@ func handleGetWebsite(c echo.Context) error {
 	return nil
 }
 
-func handleGetWebsiteUptime(c echo.Context) error {
-	month := c.QueryParam("month")
-	if month == "" {
-		return echo.NewHTTPError(http.StatusBadRequest, "missing parameter 'month'")
+func handleFromToQueryParams(c echo.Context) (time.Time, time.Time, *echo.HTTPError) {
+	var from, to time.Time
+	from, err := time.Parse(time.RFC3339, c.QueryParam("from"))
+	if err != nil {
+		return from, to, echo.NewHTTPError(http.StatusBadRequest, "invalid querystring 'from'")
 	}
-	uptime := 0.0
-	sql := `select 100 - percentage(sum(case when status_code = 200 then 0 else 1 end), floor(date_part('days', date_trunc('month', $2::timestamptz) + '1 month - 1 second'::interval) * 24 * 60 / $3)::numeric) from checks where website_id = $1 and timestamptz_in_of(checked_at, '1 month -1 second', date_trunc('month', $2::timestamptz));`
-	if err := db.QueryRow(sql, c.Param("id"), "1 "+month, checkInterval).Scan(&uptime); err != nil {
+	to, err = time.Parse(time.RFC3339, c.QueryParam("to"))
+	if err != nil {
+		return from, to, echo.NewHTTPError(http.StatusBadRequest, "invalid querystring 'to'")
+	}
+	return from, to, nil
+}
+
+func handleGetWebsiteUptime(c echo.Context) error {
+	from, to, httpErr := handleFromToQueryParams(c)
+	if httpErr != nil {
+		return httpErr
+	}
+	count := 0
+	sql := `select count(id) from checks where status_code != 200 and website_id = $1 and checked_at between $2::timestamptz and $3::timestamptz;`
+	if err := db.QueryRow(sql, c.Param("id"), from, to).Scan(&count); err != nil {
 		panic(err)
 	}
+	amount := to.Sub(from).Minutes() / checkInterval
+	uptime := (amount - float64(count)) / amount * 100
 	if err := c.JSON(http.StatusOK, uptime); err != nil {
 		panic(err)
 	}
@@ -167,12 +182,12 @@ func handleNewCheck(c echo.Context) error {
 }
 
 func handleListChecks(c echo.Context) error {
-	month := c.QueryParam("month")
-	if month == "" {
-		return echo.NewHTTPError(http.StatusBadRequest, "missing parameter 'month'")
+	from, to, httpErr := handleFromToQueryParams(c)
+	if httpErr != nil {
+		return httpErr
 	}
-	sql := `select id, checked_at, status_code, duration, breakdown from checks where website_id = $1 and timestamptz_in_of(checked_at, '1 month -1 second', date_trunc('month', $2::timestamptz)) order by checked_at desc;`
-	q, err := db.Query(sql, c.Param("id"), "1 "+month)
+	sql := `select id, checked_at, status_code, duration, breakdown from checks where website_id = $1 and checked_at between $2::timestamptz and $3::timestamptz order by checked_at desc;`
+	q, err := db.Query(sql, c.Param("id"), from, to)
 	if err != nil {
 		panic(err)
 	}
@@ -192,12 +207,12 @@ func handleListChecks(c echo.Context) error {
 }
 
 func handleListHistory(c echo.Context) error {
-	month := c.QueryParam("month")
-	if month == "" {
-		return echo.NewHTTPError(http.StatusBadRequest, "missing parameter 'month'")
+	from, to, httpErr := handleFromToQueryParams(c)
+	if httpErr != nil {
+		return httpErr
 	}
-	sql := `select checked_at, status_code, duration from checks where website_id = $1 and timestamptz_in_of(checked_at, '1 month -1 second', date_trunc('month', $2::timestamptz)) order by checked_at desc;`
-	q, err := db.Query(sql, c.Param("id"), "1 "+month)
+	sql := `select checked_at, status_code, duration from checks where website_id = $1 and checked_at between $2::timestamptz and $3::timestamptz order by checked_at desc;`
+	q, err := db.Query(sql, c.Param("id"), from, to)
 	if err != nil {
 		panic(err)
 	}
