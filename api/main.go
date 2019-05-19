@@ -18,7 +18,7 @@ import (
 
 // This should/will come from somewhere else. Likely a configuration.
 // For now I'll leave it here. Also, it's in minutes.
-const checkInterval = 15
+const checkInterval = 10
 
 var db *pgx.ConnPool
 
