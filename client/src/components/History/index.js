@@ -46,9 +46,7 @@ export default ({ params }) => {
                     <Website website={website} />
                 </a>
             </Link>
-            <div className={style.chart}>
-                <Chart checks={checks} />
-            </div>
+            <div className={style.chart}>{checks.length ? <Chart checks={checks} /> : null}</div>
             <table className={style.table}>
                 <tbody>
                     {history.map(entry => (

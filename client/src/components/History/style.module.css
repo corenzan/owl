@@ -16,8 +16,7 @@
 }
 
 .chart {
-    width: 100%;
-    padding: 1.125rem;
+    padding: 1rem;
 }
 
 .table {
@@ -38,12 +37,12 @@
 }
 
 .table td:first-child {
-    padding-left: 0.625rem;
+    padding-left: 1rem;
     text-align: left;
 }
 
 .table td:last-child {
-    padding-right: 0.625rem;
+    padding-right: 1rem;
     text-align: right;
 }
 
