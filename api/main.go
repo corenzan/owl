@@ -16,6 +16,10 @@ import (
 	"github.com/jackc/pgx"
 )
 
+// This should/will come from somewhere else. Likely a configuration.
+// For now I'll leave it here. Also, it's in minutes.
+const checkInterval = 15
+
 var db *pgx.ConnPool
 
 type (
@@ -99,14 +103,11 @@ func handleGetWebsite(c echo.Context) error {
 func handleGetWebsiteUptime(c echo.Context) error {
 	mo := c.QueryParam("mo")
 	if mo == "" {
-		if err := c.JSON(http.StatusBadRequest, nil); err != nil {
-			panic(err)
-		}
-		return nil
+		return echo.NewHTTPError(http.StatusBadRequest, "missing parameter 'mo'")
 	}
 	uptime := 0.0
-	sql := `select percentage(sum(case when status_code = 200 then 1 else 0 end), count(status_code)) from checks where website_id = $1 and timestamptz_in_of(checked_at, '1 month -1 second', date_trunc('month', $2::timestamptz));`
-	if err := db.QueryRow(sql, c.Param("id"), "1 "+mo).Scan(&uptime); err != nil {
+	sql := `select 100 - percentage(sum(case when status_code = 200 then 0 else 1 end), floor(date_part('days', date_trunc('month', $2::timestamptz) + '1 month - 1 second'::interval) * 24 * 60 / $3)::numeric) from checks where website_id = $1 and timestamptz_in_of(checked_at, '1 month -1 second', date_trunc('month', $2::timestamptz));`
+	if err := db.QueryRow(sql, c.Param("id"), "1 "+mo, checkInterval).Scan(&uptime); err != nil {
 		panic(err)
 	}
 	if err := c.JSON(http.StatusOK, uptime); err != nil {
