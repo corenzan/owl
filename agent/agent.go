@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"net/http/httptrace"
+	"sync"
 	"time"
 
 	"github.com/corenzan/owl/agent/api"
@@ -101,15 +102,21 @@ func (a *Agent) Run() {
 	if err != nil {
 		log.Fatal("agent: failed to fetch websites", err)
 	}
+	wg := &sync.WaitGroup{}
 	for _, website := range websites {
-		log.Printf("agent: checking %s", website.URL)
-		check, err := a.Check(website)
-		if err != nil {
-			log.Fatal("agent: check failed", err)
-		}
-		err = a.Report(check)
-		if err != nil {
-			log.Fatal("agent: report failed", err)
-		}
+		go (func(w *api.Website) {
+			defer wg.Done()
+			log.Printf("agent: checking %s", w.URL)
+			check, err := a.Check(w)
+			if err != nil {
+				log.Fatal("agent: check failed", err)
+			}
+			err = a.Report(check)
+			if err != nil {
+				log.Fatal("agent: report failed", err)
+			}
+		})(website)
+		wg.Add(1)
 	}
+	wg.Wait()
 }
