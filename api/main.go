@@ -202,7 +202,8 @@ func handleListHistory(c echo.Context) error {
 		}
 		q.Scan(&check.Checked, &check.StatusCode, &check.Duration)
 		if check.StatusCode == lastEntry.StatusCode {
-			lastEntry.Period = lastEntry.Started.Sub(check.Checked) / time.Minute
+			lastEntry.Period += lastEntry.Started.Sub(check.Checked) / time.Minute
+			lastEntry.Started = check.Checked
 			lastEntry.Checks++
 			lastEntry.AverageDuration += (check.Duration - lastEntry.AverageDuration) / time.Duration(lastEntry.Checks)
 		} else {
