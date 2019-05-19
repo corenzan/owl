@@ -1,6 +1,6 @@
 .indicator {
     background-color: var(--negative);
-    border-radius: 2px;
+    border-radius: 4px;
     display: inline-block;
     height: 1.25rem;
     vertical-align: middle;

@@ -1,10 +1,11 @@
 import React from "react";
+import c from "classnames";
 
 import style from "./style.module.css";
 
 const maxDuration = 5000;
 const height = 64;
-const barWidth = 11;
+const barWidth = 12;
 const barStroke = 2;
 
 const Bar = ({ index, check }) => {
@@ -17,21 +18,21 @@ const Bar = ({ index, check }) => {
     // const applicationRatio = check.breakdown.application / check.duration;
 
     return (
-        <g>
+        <g className={style.area}>
             <title>
                 DNS: {check.breakdown.dns}ms, Connection: {check.breakdown.connection}ms, TLS: {check.breakdown.tls}ms,
                 Application: {check.breakdown.application}ms, Total: {check.duration}ms, Status: {check.statusCode}
             </title>
             <defs>
                 <linearGradient id={"fill" + index} x2="0" y2="1">
-                    <stop offset={0 + "%"} stopColor="#cae00d" />
-                    <stop offset={dnsRatio * 100 + "%"} stopColor="#cae00d" />
-                    <stop offset={dnsRatio * 100 + "%"} stopColor="#ffce00" />
-                    <stop offset={(dnsRatio + connectionRatio) * 100 + "%"} stopColor="#ffce00" />
-                    <stop offset={(dnsRatio + connectionRatio) * 100 + "%"} stopColor="#ff9200" />
-                    <stop offset={(dnsRatio + connectionRatio + tlsRatio) * 100 + "%"} stopColor="#ff9200" />
-                    <stop offset={(dnsRatio + connectionRatio + tlsRatio) * 100 + "%"} stopColor="#f15524" />
-                    <stop offset={100 + "%"} stopColor="#f15524" />
+                    <stop offset={0 + "%"} stopColor="#999" />
+                    <stop offset={dnsRatio * 100 + "%"} stopColor="#999" />
+                    <stop offset={dnsRatio * 100 + "%"} stopColor="#ccc" />
+                    <stop offset={(dnsRatio + connectionRatio) * 100 + "%"} stopColor="#ccc" />
+                    <stop offset={(dnsRatio + connectionRatio) * 100 + "%"} stopColor="#999" />
+                    <stop offset={(dnsRatio + connectionRatio + tlsRatio) * 100 + "%"} stopColor="#999" />
+                    <stop offset={(dnsRatio + connectionRatio + tlsRatio) * 100 + "%"} stopColor="#666" />
+                    <stop offset={100 + "%"} stopColor="#666" />
                 </linearGradient>
             </defs>
             <rect
@@ -42,7 +43,12 @@ const Bar = ({ index, check }) => {
                 fill={"url(#fill" + index + ")"}
                 className={style.bar}
             />
-            <rect width={barWidth} height={height} x={x} fill="transparent" className={style.overlay} />
+            <rect
+                width={barWidth}
+                height={height}
+                x={x}
+                className={c(style.overlay, { [style.red]: check.statusCode !== 200 })}
+            />
         </g>
     );
 };

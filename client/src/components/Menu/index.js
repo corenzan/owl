@@ -12,7 +12,7 @@ const isSelected = (website, params) => {
 };
 
 export default () => {
-    const [_, params] = useRoute("/websites/:id");
+    const [, params] = useRoute("/websites/:id");
     const [list, update] = useState([]);
 
     useEffect(() => {
@@ -32,7 +32,7 @@ export default () => {
             <div className={style.list}>
                 {list.map(website => (
                     <Link key={website.id} href={"/websites/" + website.id}>
-                        <a className={c(style.row, isSelected(website, params) ? style.selected : null)} href="#">
+                        <a className={c(style.row, isSelected(website, params) ? style.selected : null)} href="/">
                             <Website website={website} />
                         </a>
                     </Link>
