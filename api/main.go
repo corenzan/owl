@@ -43,6 +43,15 @@ type (
 		Duration   time.Duration `json:"duration"`
 		Breakdown  *Breakdown    `json:"breakdown"`
 	}
+
+	// Entry ...
+	Entry struct {
+		Started         time.Time     `json:"startedAt"`
+		Period          time.Duration `json:"period"`
+		StatusCode      int           `json:"statusCode"`
+		AverageDuration time.Duration `json:"averageDuration"`
+		Checks          int64         `json:"totalChecks"`
+	}
 )
 
 func handleNewWebsite(c echo.Context) error {
@@ -174,6 +183,45 @@ func handleListChecks(c echo.Context) error {
 	return nil
 }
 
+func handleListHistory(c echo.Context) error {
+	mo := c.QueryParam("mo")
+	if mo == "" {
+		return echo.NewHTTPError(http.StatusBadRequest, "missing parameter 'mo'")
+	}
+	sql := `select checked_at, status_code, duration from checks where website_id = $1 and timestamptz_in_of(checked_at, '1 month -1 second', date_trunc('month', $2::timestamptz)) order by checked_at desc;`
+	q, err := db.Query(sql, c.Param("id"), "1 "+mo)
+	if err != nil {
+		panic(err)
+	}
+	defer q.Close()
+	lastEntry := &Entry{}
+	entries := []*Entry{}
+	for q.Next() {
+		check := &Check{
+			Breakdown: &Breakdown{},
+		}
+		q.Scan(&check.Checked, &check.StatusCode, &check.Duration)
+		if check.StatusCode == lastEntry.StatusCode {
+			lastEntry.Period = lastEntry.Started.Sub(check.Checked) / time.Minute
+			lastEntry.Checks++
+			lastEntry.AverageDuration += (check.Duration - lastEntry.AverageDuration) / time.Duration(lastEntry.Checks)
+		} else {
+			entry := &Entry{
+				Started:         check.Checked,
+				StatusCode:      check.StatusCode,
+				Checks:          1,
+				AverageDuration: check.Duration,
+			}
+			entries = append(entries, entry)
+			lastEntry = entry
+		}
+	}
+	if err := c.JSON(http.StatusOK, entries); err != nil {
+		panic(err)
+	}
+	return nil
+}
+
 func main() {
 	config, err := pgx.ParseURI(os.Getenv("DATABASE_URL"))
 	if err != nil {
@@ -199,6 +247,7 @@ func main() {
 	e.GET("/websites/:id", handleGetWebsite)
 	e.GET("/websites/:id/uptime", handleGetWebsiteUptime)
 	e.GET("/websites/:id/checks", handleListChecks)
+	e.GET("/websites/:id/history", handleListHistory)
 
 	authenticate := middleware.KeyAuth(func(key string, c echo.Context) (bool, error) {
 		return key == os.Getenv("API_KEY"), nil
