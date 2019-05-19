@@ -93,7 +93,7 @@ func (a *Agent) Report(check *api.Check) error {
 
 // Run ...
 func (a *Agent) Run() {
-	req, err := a.api.NewRequest("GET", "/websites", nil)
+	req, err := a.api.NewRequest("GET", "/websites?checkable=1", nil)
 	if err != nil {
 		log.Fatal("agent: failed to fetch websites", err)
 	}
