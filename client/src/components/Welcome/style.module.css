@@ -18,3 +18,13 @@
     font-size: 4.5em;
     font-weight: bold;
 }
+
+@media screen and (max-width: 768px) {
+    .owl {
+        width: 15rem;
+    }
+
+    .message {
+        font-size: 3em;
+    }
+}
