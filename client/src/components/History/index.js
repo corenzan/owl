@@ -52,7 +52,7 @@ export default ({ params }) => {
                     {history.map(entry => (
                         <tr key={entry.startedAt}>
                             <td>
-                                <Moment date={entry.startedAt} format="MMM DD, HH:mma" />
+                                <Moment date={entry.startedAt} format="MMM DD, h:mma" />
                             </td>
                             <td
                                 className={c(style.status, {
