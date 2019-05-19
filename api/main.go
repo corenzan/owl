@@ -82,7 +82,7 @@ func handleGetWebsite(c echo.Context) error {
 	sql := `select id, url from websites where id = $1 limit 1;`
 	if err := db.QueryRow(sql, c.Param("id")).Scan(&website.ID, &website.URL); err != nil {
 		if err == pgx.ErrNoRows {
-			return echo.NewHTTPError(http.StatusUnauthorized)
+			return echo.NewHTTPError(http.StatusNotFound)
 		}
 		panic(err)
 	}
