@@ -5,7 +5,7 @@ import style from "./style.module.css";
 import moment from "moment";
 
 const maxDuration = 5000;
-const height = 64;
+const height = 96;
 const barWidth = 12;
 const barStroke = 2;
 
