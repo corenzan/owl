@@ -1,8 +1,13 @@
 import React from "react";
+
+import { ReactComponent as Owl } from "../../owl-wire.svg";
 import style from "./style.module.css";
 
 export default () => {
-  return (
-    <p className={style.message}>Select a website to display its history.</p>
-  );
+    return (
+        <div className={style.welcome}>
+            <Owl className={style.owl} />
+            <p className={style.message}>Owl sees all.</p>
+        </div>
+    );
 };
