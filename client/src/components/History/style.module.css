@@ -65,7 +65,7 @@
     }
 
     .table td:nth-last-child(2) {
-        padding-right: 0.625rem;
+        padding-right: 0.5rem;
         text-align: right;
     }
 }
