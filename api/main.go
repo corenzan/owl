@@ -25,9 +25,10 @@ var db *pgx.ConnPool
 type (
 	// Website ...
 	Website struct {
-		ID        int    `json:"id"`
-		URL       string `json:"url"`
-		LastCheck *Check `json:"lastCheck,omitempty"`
+		ID      int       `json:"id"`
+		Updated time.Time `json:"updatedAt"`
+		Status  string    `json:"status"`
+		URL     string    `json:"url"`
 	}
 
 	// Breakdown ...
@@ -74,25 +75,13 @@ func handleNewWebsite(c echo.Context) error {
 }
 
 func handleGetWebsite(c echo.Context) error {
-	website := &Website{
-		LastCheck: &Check{
-			Breakdown: &Breakdown{},
-		},
-	}
-	sql := `select id, url from websites where id = $1 limit 1;`
-	if err := db.QueryRow(sql, c.Param("id")).Scan(&website.ID, &website.URL); err != nil {
+	website := &Website{}
+	sql := `select id, updated_at, status, url from websites where id = $1 limit 1;`
+	if err := db.QueryRow(sql, c.Param("id")).Scan(&website.ID, &website.Updated, &website.Status, &website.URL); err != nil {
 		if err == pgx.ErrNoRows {
 			return echo.NewHTTPError(http.StatusNotFound)
 		}
 		panic(err)
-	}
-	sql = `select checked_at, status_code, duration, breakdown from checks where website_id = $1 order by checked_at desc limit 1;`
-	if err := db.QueryRow(sql, c.Param("id")).Scan(&website.LastCheck.Checked, &website.LastCheck.StatusCode, &website.LastCheck.Duration, &website.LastCheck.Breakdown); err != nil {
-		if err == pgx.ErrNoRows {
-			website.LastCheck = nil
-		} else {
-			panic(err)
-		}
 	}
 	if err := c.JSON(http.StatusOK, website); err != nil {
 		panic(err)
@@ -118,7 +107,7 @@ func handleGetWebsiteUptime(c echo.Context) error {
 
 func handleListWebsites(c echo.Context) error {
 	websites := []*Website{}
-	sql := `select id, url from websites;`
+	sql := `select id, updated_at, status, url from websites order by status desc;`
 	q, err := db.Query(sql)
 	if err != nil {
 		panic(err)
@@ -126,7 +115,7 @@ func handleListWebsites(c echo.Context) error {
 	defer q.Close()
 	for q.Next() {
 		website := &Website{}
-		err := q.Scan(&website.ID, &website.URL)
+		err := q.Scan(&website.ID, &website.Updated, &website.Status, &website.URL)
 		if err != nil {
 			panic(err)
 		}
