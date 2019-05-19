@@ -3,9 +3,10 @@ import c from "classnames";
 
 import style from "./style.module.css";
 
-export default ({ lastCheck }) => {
-  const { statusCode } = lastCheck || {};
-  return (
-    <div className={c(style.indicator, { [style.green]: statusCode === 200, [style.gray]: statusCode === undefined })} />
-  );
+export default ({ status }) => {
+    return (
+        <svg role="img" width="8" height="24" viewBox="0 0 8 24" className={c(style.indicator, style[status])}>
+            <rect height="24" width="8" rx="2" ry="2" />
+        </svg>
+    );
 };

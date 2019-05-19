@@ -1,16 +1,17 @@
 .indicator {
-    background-color: var(--negative);
-    border-radius: 2px;
     display: inline-block;
-    height: 1.25rem;
+    color: #8f879b;
     vertical-align: middle;
-    width: 8px;
 }
 
-.green {
-    background-color: var(--positive);
+.up {
+    color: var(--positive);
 }
 
-.gray {
-    background-color: #8f879b;
+.down {
+    color: var(--negative);
+}
+
+.maintenance {
+    color: var(--banana);
 }
