@@ -60,29 +60,56 @@ const calculateAvailableWidth = element => {
     return element.parentElement.clientWidth - parseInt(style.paddingLeft, 10) - parseInt(style.paddingRight, 10);
 };
 
+let previousClientX = 0;
+
 export default ({ checks }) => {
-    const [availableWidth, setAvailableWidth] = useState(0);
+    const root = useRef(null);
+    const [limit, setLimit] = useState(0);
     const [offset, setOffset] = useState(0);
 
-    const root = useRef(null);
-
-    useEffect(() => {
-        setAvailableWidth(calculateAvailableWidth(root.current));
-        const onResize = e => {
-            setAvailableWidth(calculateAvailableWidth(root.current));
-        };
-        window.addEventListener("resize", onResize);
-        return () => {
-            window.removeEventListener("resize", onResize);
-        };
-    }, []);
-
-    const limit = Math.floor(availableWidth / barWidth);
     const width = barWidth * limit;
     const viewBox = `0 0 ${width} ${height}`;
 
+    useEffect(() => {
+        const availableWidth = calculateAvailableWidth(root.current);
+        const limit = Math.floor(availableWidth / barWidth);
+        setLimit(limit);
+        setOffset(Math.max(checks.length - limit, 0));
+    }, [checks]);
+
+    const onScroll = e => {
+        if (checks.length < limit) {
+            return;
+        }
+        let delta = 0;
+        if (e.type === "wheel") {
+            delta = e.deltaY || e.deltaX;
+        } else {
+            delta = previousClientX - e.touches[0].clientX;
+            previousClientX = e.touches[0].clientX;
+        }
+        if (delta > 0) {
+            setOffset(Math.min(offset + 1, checks.length - limit));
+        } else {
+            setOffset(Math.max(offset - 1, 0));
+        }
+    };
+
+    const onTouchStart = e => {
+        previousClientX = e.touches[0].clientX;
+    };
+
     return (
-        <svg role="img" ref={root} viewBox={viewBox} height={height} width={width}>
+        <svg
+            role="img"
+            ref={root}
+            viewBox={viewBox}
+            height={height}
+            width={width}
+            onTouchMove={e => onScroll(e)}
+            onWheel={e => onScroll(e)}
+            onTouchStart={e => onTouchStart(e)}
+        >
             {checks.slice(offset, offset + limit).map((check, index) => (
                 <Bar key={index} index={index} check={check} />
             ))}
