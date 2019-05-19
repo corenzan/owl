@@ -1,6 +1,7 @@
 .menu {
     background-color: var(--chocolate);
     color: #f0e7e5;
+    min-height: 100%;
 }
 
 .topbar {
