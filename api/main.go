@@ -132,15 +132,33 @@ func handleNewCheck(c echo.Context) error {
 	if err != nil {
 		panic(nil)
 	}
+	website := &Website{}
+	sql := `select status from websites where id = $1 limit 1;`
+	if err := db.QueryRow(sql, id).Scan(&website.Status); err != nil {
+		if err == pgx.ErrNoRows {
+			return echo.NewHTTPError(http.StatusNotFound)
+		}
+		panic(err)
+	}
 	check := &Check{
 		WebsiteID: id,
 	}
 	if err := c.Bind(check); err != nil {
 		panic(err)
 	}
-	sql := `insert into checks (website_id, status_code, duration, breakdown) values ($1, $2, $3, $4) returning id, checked_at;`
+	sql = `insert into checks (website_id, status_code, duration, breakdown) values ($1, $2, $3, $4) returning id, checked_at;`
 	if err := db.QueryRow(sql, check.WebsiteID, check.StatusCode, check.Duration, check.Breakdown).Scan(&check.ID, &check.Checked); err != nil {
 		panic(err)
+	}
+	status := "down"
+	if check.StatusCode == http.StatusOK {
+		status = "up"
+	}
+	if status != website.Status {
+		sql := `update websites set updated_at = current_timestamp, status = $2 where id = $1;`
+		if _, err := db.Exec(sql, id, status); err != nil {
+			panic(err)
+		}
 	}
 	if err := c.JSON(http.StatusCreated, check); err != nil {
 		panic(err)

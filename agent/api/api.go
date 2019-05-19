@@ -10,17 +10,18 @@ import (
 type (
 	// Website ...
 	Website struct {
-		ID        int    `json:"id"`
-		URL       string `json:"url"`
-		LastCheck *Check `json:"lastCheck"`
+		ID      int       `json:"id"`
+		Updated time.Time `json:"updatedAt"`
+		Status  string    `json:"status"`
+		URL     string    `json:"url"`
 	}
 
 	// Breakdown ...
 	Breakdown struct {
-		DNS        time.Duration `json:"dns"`        // DNSStart-DNSDone
-		Connection time.Duration `json:"connection"` // ConnectStart-ConnectDone
-		TLS        time.Duration `json:"tls"`        // TLSHandshakeStart-TLSHandshakeDone
-		Application       time.Duration `json:"application"`       // WroteRequest-GotFirstResponseByte
+		DNS         time.Duration `json:"dns"`         // DNSStart-DNSDone
+		Connection  time.Duration `json:"connection"`  // ConnectStart-ConnectDone
+		TLS         time.Duration `json:"tls"`         // TLSHandshakeStart-TLSHandshakeDone
+		Application time.Duration `json:"application"` // WroteRequest-GotFirstResponseByte
 	}
 
 	// Check ...

@@ -10,10 +10,10 @@ import (
 
 func TestBreakdownTotla(t *testing.T) {
 	b := &Breakdown{
-		DNS:        1,
-		Connection: 1,
-		TLS:        1,
-		Application:       1,
+		DNS:         1,
+		Connection:  1,
+		TLS:         1,
+		Application: 1,
 	}
 	if b.Total() != time.Duration(4) {
 		t.Fail()
