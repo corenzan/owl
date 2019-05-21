@@ -12,8 +12,6 @@ export default ({ website, onClick }) => {
     const [uptime, setUptime] = useState(0);
     const { period } = useContext(appContext);
 
-    console.log(period);
-
     useEffect(() => {
         api.uptime(website.id, ...period).then(setUptime);
     }, []);
