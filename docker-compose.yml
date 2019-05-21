@@ -1,37 +1,35 @@
 version: "3"
 services:
-  agent:
-    build: ./agent
-    volumes:
-      - .:/go/src/github.com/corenzan/owl
-    command: reflex -g *.go -g ./api/*.go -- go test -cover . ./api
-  api:
-    build: ./api
-    volumes:
-      - .:/go/src/github.com/corenzan/owl
-    command: reflex -g *.go -s -- go run .
-    depends_on:
-      - db
-    ports:
-      - 5000
-    environment:
-      - PORT=5000
-      - API_KEY=123
-      - VIRTUAL_HOST=api.owl.localhost
-      - DATABASE_URL=postgres://postgres:123@db/postgres?sslmode=disable
-  client:
-    build: ./client
-    ports:
-      - 3000
-    volumes:
-      - ./client:/usr/local/src
-    environment:
-      - VIRTUAL_HOST=owl.localhost
-      - REACT_APP_API_URL=http://api.owl.localhost
-  db:
-    image: postgres:11-alpine
-    ports:
-      - 5432
-    environment:
-      - POSTGRES_PASSWORD=123
-      - PGPASSWORD=123
+    agent:
+        build: ./agent
+        volumes:
+            - .:/go/src/github.com/corenzan/owl
+    api:
+        build: ./api
+        volumes:
+            - .:/go/src/github.com/corenzan/owl
+        ports:
+            - 5000
+        environment:
+            - PORT=5000
+            - API_KEY=123
+            - VIRTUAL_HOST=api.owl.localhost
+            - DATABASE_URL=postgres://postgres:123@db/postgres?sslmode=disable
+        depends_on:
+            - db
+    client:
+        build: ./client
+        ports:
+            - 3000
+        volumes:
+            - ./client:/usr/local/src
+        environment:
+            - VIRTUAL_HOST=owl.localhost
+            - REACT_APP_API_URL=http://api.owl.localhost
+    db:
+        image: postgres:11-alpine
+        ports:
+            - 5432
+        environment:
+            - POSTGRES_PASSWORD=123
+            - PGPASSWORD=123

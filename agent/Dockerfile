@@ -7,3 +7,4 @@ WORKDIR /go/src/github.com/corenzan/owl/agent
 
 ENV GO111MODULE on
 
+CMD ["reflex", "--", "go", "test", "-cover", ".", "./api"]
