@@ -102,10 +102,17 @@ func (a *Agent) Run() {
 	if err != nil {
 		log.Fatal("agent: failed to fetch websites", err)
 	}
+	semaphore := make(chan struct{}, 5)
 	wg := &sync.WaitGroup{}
 	for _, website := range websites {
+		wg.Add(1)
+
 		go (func(w *api.Website) {
 			defer wg.Done()
+			defer (func() {
+				<-semaphore
+			})()
+			semaphore <- struct{}{}
 			log.Printf("agent: checking %s", w.URL)
 			check, err := a.Check(w)
 			if err != nil {
@@ -116,7 +123,6 @@ func (a *Agent) Run() {
 				log.Fatal("agent: report failed", err)
 			}
 		})(website)
-		wg.Add(1)
 	}
 	wg.Wait()
 }
