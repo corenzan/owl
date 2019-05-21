@@ -22,7 +22,7 @@ $ docker-compose up
 
 ### Server
 
-Located at [./server](server).
+Located at [./api](api).
 
 The server is a web service written in Go using [Echo](https://echo.labstack.com/) and backed by PostgreSQL 11. The container will watch for source file changes and automatically rebuild.
 
