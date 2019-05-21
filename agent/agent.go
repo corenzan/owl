@@ -39,6 +39,7 @@ func New(endpoint, key string) *Agent {
 func (a *Agent) Check(website *api.Website) (*api.Check, error) {
 	check := &api.Check{
 		WebsiteID: website.ID,
+		Result:    api.ResultUp,
 		Latency:   &api.Latency{},
 	}
 	timeline := &Timeline{}
@@ -74,17 +75,11 @@ func (a *Agent) Check(website *api.Website) (*api.Check, error) {
 	}
 	_, err = a.client.Do(req.WithContext(httptrace.WithClientTrace(req.Context(), trace)))
 	if err != nil {
-		return nil, err
+		check.Result = api.ResultDown
 	}
 	check.Latency.Total = check.Latency.DNS + check.Latency.TLS +
 		check.Latency.Connection + check.Latency.Application
-
-	// What defines a successful check?
-	// For now we look for a status code of 200 but it'll changed
-	// in the future and even be configurable on a per site basis.
-	check.Result = api.ResultUp
-
-	return check, nil
+	return check, err
 }
 
 // Report ...
@@ -100,18 +95,17 @@ func (a *Agent) Report(check *api.Check) error {
 func (a *Agent) Run() {
 	req, err := a.api.NewRequest("GET", "/websites?checkable=1", nil)
 	if err != nil {
-		log.Fatal("agent: failed to fetch websites", err)
+		log.Printf("agent: failed to fetch websites: %s", err)
 	}
 	websites := []*api.Website{}
 	err = a.api.Do(req, &websites)
 	if err != nil {
-		log.Fatal("agent: failed to fetch websites", err)
+		log.Printf("agent: failed to fetch websites: %s", err)
 	}
 	semaphore := make(chan struct{}, 5)
 	wg := &sync.WaitGroup{}
 	for _, website := range websites {
 		wg.Add(1)
-
 		go (func(w *api.Website) {
 			defer wg.Done()
 			defer (func() {
@@ -121,11 +115,11 @@ func (a *Agent) Run() {
 			log.Printf("agent: checking %s", w.URL)
 			check, err := a.Check(w)
 			if err != nil {
-				log.Fatal("agent: check failed", err)
+				log.Printf("agent: check failed: %s", err)
 			}
 			err = a.Report(check)
 			if err != nil {
-				log.Fatal("agent: report failed", err)
+				log.Printf("agent: report failed: %s", err)
 			}
 		})(website)
 	}
