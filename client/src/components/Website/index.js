@@ -14,7 +14,7 @@ export default ({ website, onClick }) => {
 
     useEffect(() => {
         api.uptime(website.id, ...period).then(setUptime);
-    }, []);
+    }, [website.id]);
 
     return (
         <div className={style.website} onClick={onClick}>
