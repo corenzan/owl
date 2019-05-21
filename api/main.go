@@ -41,6 +41,13 @@ type (
 		Latency   *Latency  `json:"latency"`
 	}
 
+	// Aggregate ...
+	Aggregate struct {
+		Highest float64 `json:"highest"`
+		Average float64 `json:"average"`
+		Lowest  float64 `json:"lowest"`
+	}
+
 	// Entry ...
 	Entry struct {
 		Time     time.Time     `json:"time"`
@@ -127,6 +134,34 @@ func handleGetWebsiteUptime(c echo.Context) error {
 		panic(err)
 	}
 	if err := c.JSON(http.StatusOK, uptime); err != nil {
+		panic(err)
+	}
+	return nil
+}
+
+func handleGetWebsiteAggregate(c echo.Context) error {
+	var found bool
+	q := `select true from websites where id = $1 limit 1`
+	if err := db.QueryRow(q, c.Param("id")).Scan(&found); err != nil {
+		if err == pgx.ErrNoRows {
+			return echo.NewHTTPError(http.StatusNotFound)
+		}
+		panic(err)
+	}
+	after, before, httpErr := handleAfterBeforeQueryParams(c)
+	if httpErr != nil {
+		return httpErr
+	}
+	aggregate := &Aggregate{}
+	q = `select max((latency->>'total')::numeric) over (partition by website_id) as highest, 
+		avg((latency->>'total')::numeric) over (partition by website_id) as average, 
+		min((latency->>'total')::numeric) over (partition by website_id) as lowest 
+		from checks where website_id = $1 and checked_at between $2::timestamptz and $3::timestamptz 
+		order by checked_at desc;`
+	if err := db.QueryRow(q, c.Param("id"), after, before).Scan(&aggregate.Highest, &aggregate.Average, &aggregate.Lowest); err != nil {
+		panic(err)
+	}
+	if err := c.JSON(http.StatusOK, aggregate); err != nil {
 		panic(err)
 	}
 	return nil
@@ -294,6 +329,7 @@ func main() {
 	e.GET("/websites", handleListWebsites)
 	e.GET("/websites/:id", handleGetWebsite)
 	e.GET("/websites/:id/uptime", handleGetWebsiteUptime)
+	e.GET("/websites/:id/aggregate", handleGetWebsiteAggregate)
 	e.GET("/websites/:id/checks", handleListChecks)
 	e.GET("/websites/:id/history", handleListHistory)
 
