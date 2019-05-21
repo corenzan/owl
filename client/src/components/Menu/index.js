@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from "react";
 import { Link, useRoute } from "wouter";
 import Moment from "react-moment";
 import c from "classnames";
+
 import Website from "../Website";
 import api from "../../api.js";
 import { appContext } from "../App";
@@ -18,7 +19,7 @@ export default () => {
     const { period } = useContext(appContext);
 
     useEffect(() => {
-        api.request("/websites").then(update);
+        api.websites().then(update);
     }, []);
 
     return (
@@ -34,7 +35,7 @@ export default () => {
             <div className={style.list}>
                 {list.map(website => (
                     <Link key={website.id} href={"/websites/" + website.id}>
-                        <a className={c(style.row, isSelected(website, params) ? style.selected : null)} href="/">
+                        <a className={c(style.row, { [style.selected]: isSelected(website, params) })} href="/">
                             <Website website={website} />
                         </a>
                     </Link>

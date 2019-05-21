@@ -2,70 +2,72 @@ package main
 
 import (
 	"context"
-	"log"
 	"net/http"
 	"os"
 	"os/signal"
-	"strconv"
 	"syscall"
 	"time"
 
-	"github.com/labstack/echo"
-	"github.com/labstack/echo/middleware"
-
 	"github.com/jackc/pgx"
+
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 )
-
-// This should/will come from somewhere else. Likely a configuration.
-// For now I'll leave it here. Also, it's in minutes.
-var checkInterval float64 = 10
-
-var db *pgx.ConnPool
 
 type (
 	// Website ...
 	Website struct {
-		ID      int       `json:"id"`
-		Updated time.Time `json:"updatedAt"`
+		ID      uint      `json:"id"`
+		Updated time.Time `json:"updatedAt" db:"updated_at"`
 		Status  string    `json:"status"`
 		URL     string    `json:"url"`
 	}
 
-	// Breakdown ...
-	Breakdown struct {
+	// Latency ...
+	Latency struct {
 		DNS         time.Duration `json:"dns"`
 		Connection  time.Duration `json:"connection"`
 		TLS         time.Duration `json:"tls"`
 		Application time.Duration `json:"application"`
+		Total       time.Duration `json:"total"`
 	}
 
 	// Check ...
 	Check struct {
-		ID         int           `json:"id,omitempty"`
-		Checked    time.Time     `json:"checkedAt"`
-		WebsiteID  int           `json:"websiteId,omitempty"`
-		StatusCode int           `json:"statusCode"`
-		Duration   time.Duration `json:"duration"`
-		Breakdown  *Breakdown    `json:"breakdown"`
+		ID        uint      `json:"id"`
+		WebsiteID uint      `json:"websiteId,omitempty" db:"website_id"`
+		Checked   time.Time `json:"checkedAt" db:"checked_at"`
+		Result    string    `json:"result"`
+		Latency   *Latency  `json:"latency"`
 	}
 
 	// Entry ...
 	Entry struct {
-		Started         time.Time     `json:"startedAt"`
-		Period          time.Duration `json:"period"`
-		StatusCode      int           `json:"statusCode"`
-		AverageDuration time.Duration `json:"averageDuration"`
-		Checks          int64         `json:"totalChecks"`
+		Time     time.Time     `json:"time"`
+		Status   string        `json:"status"`
+		Duration time.Duration `json:"duration"`
 	}
 )
+
+const (
+	statusUnknown     = "unknown"
+	statusMaintenance = "maintenance"
+	statusUp          = "up"
+	statusDown        = "down"
+
+	resultUp   = "up"
+	resultDown = "down"
+)
+
+var db *pgx.ConnPool
 
 func handleNewWebsite(c echo.Context) error {
 	website := &Website{}
 	if err := c.Bind(website); err != nil {
 		panic(err)
 	}
-	sql := `insert into websites (url) values ($1) returning id;`
-	if err := db.QueryRow(sql, website.URL).Scan(&website.ID); err != nil {
+	q := `insert into websites (url) values ($1) returning id, status, updated_at;`
+	if err := db.QueryRow(q, website.URL).Scan(&website.ID, &website.Status, &website.Updated); err != nil {
 		panic(err)
 	}
 	if err := c.JSON(http.StatusCreated, website); err != nil {
@@ -76,8 +78,8 @@ func handleNewWebsite(c echo.Context) error {
 
 func handleGetWebsite(c echo.Context) error {
 	website := &Website{}
-	sql := `select id, updated_at, status, url from websites where id = $1 limit 1;`
-	if err := db.QueryRow(sql, c.Param("id")).Scan(&website.ID, &website.Updated, &website.Status, &website.URL); err != nil {
+	q := `select id, url, status, updated_at from websites where id = $1 limit 1;`
+	if err := db.QueryRow(q, c.Param("id")).Scan(&website.ID, &website.URL, &website.Status, &website.Updated); err != nil {
 		if err == pgx.ErrNoRows {
 			return echo.NewHTTPError(http.StatusNotFound)
 		}
@@ -89,31 +91,41 @@ func handleGetWebsite(c echo.Context) error {
 	return nil
 }
 
-func handleFromToQueryParams(c echo.Context) (time.Time, time.Time, *echo.HTTPError) {
-	var from, to time.Time
-	from, err := time.Parse(time.RFC3339, c.QueryParam("from"))
+func handleAfterBeforeQueryParams(c echo.Context) (time.Time, time.Time, *echo.HTTPError) {
+	var after, before time.Time
+	after, err := time.Parse(time.RFC3339, c.QueryParam("after"))
 	if err != nil {
-		return from, to, echo.NewHTTPError(http.StatusBadRequest, "invalid querystring 'from'")
+		return after, before, echo.NewHTTPError(http.StatusBadRequest, "invalid querystring 'after'")
 	}
-	to, err = time.Parse(time.RFC3339, c.QueryParam("to"))
+	before, err = time.Parse(time.RFC3339, c.QueryParam("before"))
 	if err != nil {
-		return from, to, echo.NewHTTPError(http.StatusBadRequest, "invalid querystring 'to'")
+		return after, before, echo.NewHTTPError(http.StatusBadRequest, "invalid querystring 'before'")
 	}
-	return from, to, nil
+	return after, before, nil
+}
+
+func exist(q string, args ...interface{}) {
 }
 
 func handleGetWebsiteUptime(c echo.Context) error {
-	from, to, httpErr := handleFromToQueryParams(c)
+	var found bool
+	q := `select true from websites where id = $1 limit 1;`
+	if err := db.QueryRow(q, c.Param("id")).Scan(&found); err != nil {
+		if err == pgx.ErrNoRows {
+			return echo.NewHTTPError(http.StatusNotFound)
+		}
+		panic(err)
+	}
+	after, before, httpErr := handleAfterBeforeQueryParams(c)
 	if httpErr != nil {
 		return httpErr
 	}
-	count := 0
-	sql := `select count(id) from checks where status_code != 200 and website_id = $1 and checked_at between $2::timestamptz and $3::timestamptz;`
-	if err := db.QueryRow(sql, c.Param("id"), from, to).Scan(&count); err != nil {
+	uptime := 0.0
+	q = `select percentage(sum(case result when $1 then 1 else 0 end), count(result)) as uptime 
+		from checks where website_id = $2 and checked_at between $3::timestamptz and $4::timestamptz;`
+	if err := db.QueryRow(q, resultUp, c.Param("id"), after, before).Scan(&uptime); err != nil {
 		panic(err)
 	}
-	amount := to.Sub(from).Minutes() / checkInterval
-	uptime := (amount - float64(count)) / amount * 100
 	if err := c.JSON(http.StatusOK, uptime); err != nil {
 		panic(err)
 	}
@@ -121,21 +133,20 @@ func handleGetWebsiteUptime(c echo.Context) error {
 }
 
 func handleListWebsites(c echo.Context) error {
-	sql := `select id, updated_at, status, url from websites order by status desc;`
+	q := `select id, url, status, updated_at from websites order by status desc;`
 	checkable := c.QueryParam("checkable")
 	if checkable != "" {
-		sql = `select id, updated_at, status, url from websites where status != 'maintenance' order by status desc;`
+		q = `select id, url, status, updated_at from websites where status != 'maintenance' order by status desc;`
 	}
-	q, err := db.Query(sql)
+	rows, err := db.Query(q)
 	if err != nil {
 		panic(err)
 	}
-	defer q.Close()
+	defer rows.Close()
 	websites := []*Website{}
-	for q.Next() {
+	for rows.Next() {
 		website := &Website{}
-		err := q.Scan(&website.ID, &website.Updated, &website.Status, &website.URL)
-		if err != nil {
+		if err := rows.Scan(&website.ID, &website.URL, &website.Status, &website.Updated); err != nil {
 			panic(err)
 		}
 		websites = append(websites, website)
@@ -147,35 +158,31 @@ func handleListWebsites(c echo.Context) error {
 }
 
 func handleNewCheck(c echo.Context) error {
-	id, err := strconv.Atoi(c.Param("id"))
-	if err != nil {
-		panic(nil)
-	}
 	website := &Website{}
-	sql := `select status from websites where id = $1 limit 1;`
-	if err := db.QueryRow(sql, id).Scan(&website.Status); err != nil {
+	q := `select id, status from websites where id = $1 limit 1;`
+	if err := db.QueryRow(q, c.Param("id")).Scan(&website.ID, &website.Status); err != nil {
 		if err == pgx.ErrNoRows {
 			return echo.NewHTTPError(http.StatusNotFound)
 		}
 		panic(err)
 	}
 	check := &Check{
-		WebsiteID: id,
+		WebsiteID: website.ID,
 	}
 	if err := c.Bind(check); err != nil {
 		panic(err)
 	}
-	sql = `insert into checks (website_id, status_code, duration, breakdown) values ($1, $2, $3, $4) returning id, checked_at;`
-	if err := db.QueryRow(sql, check.WebsiteID, check.StatusCode, check.Duration, check.Breakdown).Scan(&check.ID, &check.Checked); err != nil {
+	q = `insert into checks (website_id, result, latency) values ($1, $2, $3) returning id, checked_at;`
+	if err := db.QueryRow(q, website.ID, check.Result, check.Latency).Scan(&check.ID, &check.Checked); err != nil {
 		panic(err)
 	}
-	status := "down"
-	if check.StatusCode == http.StatusOK {
-		status = "up"
+	status := statusDown
+	if check.Result == resultUp {
+		status = statusUp
 	}
-	if status != website.Status {
-		sql := `update websites set updated_at = current_timestamp, status = $2 where id = $1;`
-		if _, err := db.Exec(sql, id, status); err != nil {
+	if website.Status != status {
+		q := `update websites set updated_at = current_timestamp, status = $2 where id = $1;`
+		if _, err := db.Exec(q, website.ID, status); err != nil {
 			panic(err)
 		}
 	}
@@ -186,22 +193,31 @@ func handleNewCheck(c echo.Context) error {
 }
 
 func handleListChecks(c echo.Context) error {
-	from, to, httpErr := handleFromToQueryParams(c)
+	var found bool
+	q := `select true from websites where id = $1 limit 1`
+	if err := db.QueryRow(q, c.Param("id")).Scan(&found); err != nil {
+		if err == pgx.ErrNoRows {
+			return echo.NewHTTPError(http.StatusNotFound)
+		}
+		panic(err)
+	}
+	after, before, httpErr := handleAfterBeforeQueryParams(c)
 	if httpErr != nil {
 		return httpErr
 	}
-	sql := `select id, checked_at, status_code, duration, breakdown from checks where website_id = $1 and checked_at between $2::timestamptz and $3::timestamptz order by checked_at asc;`
-	q, err := db.Query(sql, c.Param("id"), from, to)
+	q = `select id, checked_at, result, latency from checks where website_id = $1 and 
+		checked_at between $2::timestamptz and $3::timestamptz order by checked_at asc`
+	rows, err := db.Query(q, c.Param("id"), after, before)
 	if err != nil {
 		panic(err)
 	}
-	defer q.Close()
+	defer rows.Close()
 	checks := []*Check{}
-	for q.Next() {
-		check := &Check{
-			Breakdown: &Breakdown{},
+	for rows.Next() {
+		check := &Check{}
+		if err := rows.Scan(&check.ID, &check.Checked, &check.Result, &check.Latency); err != nil {
+			panic(err)
 		}
-		q.Scan(&check.ID, &check.Checked, &check.StatusCode, &check.Duration, &check.Breakdown)
 		checks = append(checks, check)
 	}
 	if err := c.JSON(http.StatusOK, checks); err != nil {
@@ -211,40 +227,37 @@ func handleListChecks(c echo.Context) error {
 }
 
 func handleListHistory(c echo.Context) error {
-	from, to, httpErr := handleFromToQueryParams(c)
+	var found bool
+	q := `select true from websites where id = $1 limit 1`
+	if err := db.QueryRow(q, c.Param("id")).Scan(&found); err != nil {
+		if err == pgx.ErrNoRows {
+			return echo.NewHTTPError(http.StatusNotFound)
+		}
+		panic(err)
+	}
+	after, before, httpErr := handleAfterBeforeQueryParams(c)
 	if httpErr != nil {
 		return httpErr
 	}
-	sql := `select checked_at, status_code, duration from checks where website_id = $1 and checked_at between $2::timestamptz and $3::timestamptz order by checked_at desc;`
-	q, err := db.Query(sql, c.Param("id"), from, to)
+	history := []*Entry{}
+	q = `select checked_at as time, result as status, extract(epoch from lag(checked_at, 1, current_timestamp) over 
+		(order by checked_at desc) - checked_at)::int as duration from checks where website_id = $1 and 
+		checked_at between $2::timestamptz and $3::timestamptz order by checked_at desc`
+	rows, err := db.Query(q, c.Param("id"), after, before)
 	if err != nil {
-		panic(err)
-	}
-	defer q.Close()
-	lastEntry := &Entry{}
-	entries := []*Entry{}
-	for q.Next() {
-		check := &Check{
-			Breakdown: &Breakdown{},
-		}
-		q.Scan(&check.Checked, &check.StatusCode, &check.Duration)
-		if check.StatusCode == lastEntry.StatusCode {
-			lastEntry.Period += lastEntry.Started.Sub(check.Checked) / time.Minute
-			lastEntry.Started = check.Checked
-			lastEntry.Checks++
-			lastEntry.AverageDuration += (check.Duration - lastEntry.AverageDuration) / time.Duration(lastEntry.Checks)
-		} else {
-			entry := &Entry{
-				Started:         check.Checked,
-				StatusCode:      check.StatusCode,
-				Checks:          1,
-				AverageDuration: check.Duration,
-			}
-			entries = append(entries, entry)
-			lastEntry = entry
+		if err != pgx.ErrNoRows {
+			panic(err)
 		}
 	}
-	if err := c.JSON(http.StatusOK, entries); err != nil {
+	defer rows.Close()
+	for rows.Next() {
+		entry := &Entry{}
+		if err := rows.Scan(&entry.Time, &entry.Status, &entry.Duration); err != nil {
+			panic(err)
+		}
+		history = append(history, entry)
+	}
+	if err := c.JSON(http.StatusOK, history); err != nil {
 		panic(err)
 	}
 	return nil
@@ -253,13 +266,13 @@ func handleListHistory(c echo.Context) error {
 func main() {
 	config, err := pgx.ParseURI(os.Getenv("DATABASE_URL"))
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 	db, err = pgx.NewConnPool(pgx.ConnPoolConfig{
 		ConnConfig: config,
 	})
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 
 	e := echo.New()
@@ -277,12 +290,12 @@ func main() {
 	e.GET("/websites/:id/checks", handleListChecks)
 	e.GET("/websites/:id/history", handleListHistory)
 
-	authenticate := middleware.KeyAuth(func(key string, c echo.Context) (bool, error) {
+	authorize := middleware.KeyAuth(func(key string, c echo.Context) (bool, error) {
 		return key == os.Getenv("API_KEY"), nil
 	})
 
-	e.POST("/websites", handleNewWebsite, authenticate)
-	e.POST("/websites/:id/checks", handleNewCheck, authenticate)
+	e.POST("/websites", handleNewWebsite, authorize)
+	e.POST("/websites/:id/checks", handleNewCheck, authorize)
 
 	shutdown := make(chan os.Signal, 2)
 	signal.Notify(shutdown, syscall.SIGTERM, syscall.SIGINT)

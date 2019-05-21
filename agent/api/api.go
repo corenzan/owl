@@ -10,29 +10,29 @@ import (
 type (
 	// Website ...
 	Website struct {
-		ID      int       `json:"id"`
+		ID      uint      `json:"id"`
 		Updated time.Time `json:"updatedAt"`
 		Status  string    `json:"status"`
 		URL     string    `json:"url"`
 	}
 
-	// Breakdown ...
-	Breakdown struct {
-		DNS         time.Duration `json:"dns"`         // DNSStart-DNSDone
-		Connection  time.Duration `json:"connection"`  // ConnectStart-ConnectDone
-		TLS         time.Duration `json:"tls"`         // TLSHandshakeStart-TLSHandshakeDone
-		Application time.Duration `json:"application"` // WroteRequest-GotFirstResponseByte
+	// Latency ...
+	Latency struct {
+		DNS         time.Duration `json:"dns"`
+		Connection  time.Duration `json:"connection"`
+		TLS         time.Duration `json:"tls"`
+		Application time.Duration `json:"application"`
+		Total       time.Duration `json:"total"`
 	}
 
 	// Check ...
 	Check struct {
-		Checked    time.Time     `json:"checked"`
-		WebsiteID  int           `json:"websiteId"`
-		StatusCode int           `json:"statusCode"`
-		Duration   time.Duration `json:"duration"`
-		Breakdown  *Breakdown    `json:"breakdown"`
+		ID        uint      `json:"id"`
+		WebsiteID uint      `json:"websiteId,omitempty"`
+		Checked   time.Time `json:"checkedAt"`
+		Result    string    `json:"result"`
+		Latency   *Latency  `json:"latency"`
 	}
-
 	// API ...
 	API struct {
 		Endpoint, Key string
@@ -40,10 +40,19 @@ type (
 	}
 )
 
-// Total ...
-func (b *Breakdown) Total() time.Duration {
-	return b.DNS + b.TLS + b.Connection + b.Application
-}
+// Website status options.
+const (
+	StatusUnknown     = "unknown"
+	StatusUp          = "up"
+	StatusMaintenance = "maintenance"
+	StatusDown        = "down"
+)
+
+// Check result options.
+const (
+	ResultUp   = "up"
+	ResultDown = "down"
+)
 
 // New ...
 func New(endpoint, key string) *API {

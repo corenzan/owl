@@ -51,21 +51,11 @@
     color: var(--positive);
 }
 
-.status.red {
+.status.bad {
     color: var(--negative);
 }
 
 @media screen and (max-width: 768px) {
     .table td:first-child {
-        width: 10rem;
-    }
-
-    .table td:last-child {
-        display: none;
-    }
-
-    .table td:nth-last-child(2) {
-        padding-right: 0.5rem;
-        text-align: right;
     }
 }

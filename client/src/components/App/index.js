@@ -11,14 +11,7 @@ import style from "./style.module.css";
 export const appContext = createContext();
 
 export default () => {
-    const [period] = useState([
-        moment()
-            .utc()
-            .startOf("month"),
-        moment()
-            .utc()
-            .endOf("month")
-    ]);
+    const [period] = useState([moment().startOf("month"), moment().endOf("month")]);
     const [path] = useLocation();
 
     return (

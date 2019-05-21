@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext } from "react";
 import Moment from "react-moment";
 import c from "classnames";
+
 import Indicator from "../Indicator";
 import { appContext } from "../App";
 import api from "../../api.js";
@@ -14,9 +15,7 @@ export default ({ website, onClick }) => {
     console.log(period);
 
     useEffect(() => {
-        api.request("/websites/" + website.id + "/uptime?from=" + period[0].format() + "&to=" + period[1].format()).then(
-            setUptime
-        );
+        api.uptime(website.id, ...period).then(setUptime);
     }, []);
 
     return (

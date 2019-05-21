@@ -4,26 +4,27 @@ import c from "classnames";
 import style from "./style.module.css";
 import moment from "moment";
 
-const maxDuration = 5000;
+const maxLatency = 5000;
 const height = 96;
 const barWidth = 12;
 const barStroke = 2;
 
 const Bar = ({ index, check }) => {
     const x = barWidth * index;
-    const y = check.duration / maxDuration;
+    const y = check.latency.total / maxLatency;
 
-    const dnsRatio = check.breakdown.dns / check.duration;
-    const connectionRatio = check.breakdown.connection / check.duration;
-    const tlsRatio = check.breakdown.tls / check.duration;
-    // const applicationRatio = check.breakdown.application / check.duration;
+    const dnsRatio = check.latency.dns / check.latency.total;
+    const connectionRatio = check.latency.connection / check.latency.total;
+    const tlsRatio = check.latency.tls / check.latency.total;
+    // const applicationRatio = check.latency.application / check.latency.total;
 
     return (
         <g className={style.area}>
             <title>
-                {moment(check.checkedAt).format("MMM D, H:mm")} / Status: {check.statusCode} / DNS: {check.breakdown.dns}ms /
-                Connection: {check.breakdown.connection}ms / TLS: {check.breakdown.tls}ms / Application:{" "}
-                {check.breakdown.application}ms / Total: {check.duration}ms
+                {moment(check.checkedAt).format("MMM D, H:mm")} / Result: {check.result === "up" ? "Up" : "Down"} / DNS:{" "}
+                {check.latency.dns}ms / Connection: {check.latency.connection}ms / TLS: {check.latency.tls}ms / Application:{" "}
+                {check.latency.application}
+                ms / Total: {check.latency.total}ms
             </title>
             <defs>
                 <linearGradient id={"fill" + index} x1="0%" y1="100%" x2="0%" y2="0%">
@@ -45,12 +46,7 @@ const Bar = ({ index, check }) => {
                 fill={"url(#fill" + index + ")"}
                 className={style.bar}
             />
-            <rect
-                width={barWidth}
-                height={height}
-                x={x}
-                className={c(style.overlay, { [style.red]: check.statusCode !== 200 })}
-            />
+            <rect width={barWidth} height={height} x={x} className={c(style.overlay, { [style.bad]: check.result !== "up" })} />
         </g>
     );
 };

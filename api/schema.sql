@@ -1,28 +1,25 @@
-
-create or replace function percentage(v numeric, t numeric)
-returns numeric as $$
-    begin return case when t = 0 then 0 else v / t * 100.0 end; end;
-$$ language plpgsql;
-
-create or replace function timestamptz_in_of(t timestamptz, i text, r timestamptz)
-returns boolean as $$
-    begin return t::timestamptz between r::timestamptz and r::timestamptz + i::interval; end;
-$$ language plpgsql;
-
 create type website_status as enum ('unknown', 'up', 'maintenance', 'down');
 
 create table websites (
-    id serial primary key,
-    updated_at timestamptz not null default current_timestamp,
-    status website_status not null default 'unknown',
-    url text not null
+	id serial not null primary key,
+	url text not null,
+	status website_status not null default 'unknown',
+	updated_at timestamptz not null default current_timestamp 
 );
 
+create type check_result as enum ('up', 'down');
+
 create table checks (
-    id serial primary key,
-    checked_at timestamptz not null default current_timestamp,
-    website_id integer references websites (id),
-    status_code numeric not null,
-    duration numeric not null,
-    breakdown jsonb not null default '{}'
+	id serial not null primary key,
+	checked_at timestamptz not null default current_timestamp,
+	website_id integer references websites (id),
+	result check_result not null,
+	latency jsonb not null default '{}'
 );
+
+create function percentage(n numeric, t numeric)
+returns numeric as $$
+	begin 
+		return case when t = 0 then 0 else n / t * 100.0 end; 
+	end;
+$$ language plpgsql;

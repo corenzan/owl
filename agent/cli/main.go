@@ -30,12 +30,11 @@ func main() {
 		})
 		if err == nil {
 			fmt.Printf("%12s: %s\n", "URL", url)
-			fmt.Printf("%12s: %d\n", "StatusCode", check.StatusCode)
-			fmt.Printf("%12s: %dms\n", "DNS", check.Breakdown.DNS)
-			fmt.Printf("%12s: %dms\n", "TLS", check.Breakdown.TLS)
-			fmt.Printf("%12s: %dms\n", "Connection", check.Breakdown.Connection)
-			fmt.Printf("%12s: %dms\n", "Application", check.Breakdown.Application)
-			fmt.Printf("%12s: %dms\n", "Total", check.Duration)
+			fmt.Printf("%12s: %dms\n", "DNS", check.Latency.DNS)
+			fmt.Printf("%12s: %dms\n", "TLS", check.Latency.TLS)
+			fmt.Printf("%12s: %dms\n", "Connection", check.Latency.Connection)
+			fmt.Printf("%12s: %dms\n", "Application", check.Latency.Application)
+			fmt.Printf("%12s: %dms\n", "Total", check.Latency.Total)
 		} else {
 			fmt.Println("agent/cli:", err)
 		}

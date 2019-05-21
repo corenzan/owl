@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useContext } from "react";
 import Moment from "react-moment";
-import moment from "moment";
 import { Link } from "wouter";
 import c from "classnames";
+
+import api from "../../api.js";
 import { appContext } from "../App";
 import Chart from "../Chart";
-import Period from "../Period";
+import Duration from "../Duration";
 import Website from "../Website";
-import api from "../../api.js";
 
 import style from "./style.module.css";
 
@@ -15,25 +15,14 @@ export default ({ params }) => {
     const { period } = useContext(appContext);
 
     const [website, setWebsite] = useState(null);
-    useEffect(() => {
-        api.request("/websites/" + params.id).then(setWebsite);
-    }, [params.id]);
-
     const [checks, setChecks] = useState([]);
-    useEffect(() => {
-        if (!website) {
-            return;
-        }
-        api.request(`/websites/${website.id}/checks?from=${period[0].format()}&to=${period[1].format()}`).then(setChecks);
-    }, [website]);
-
     const [history, setHistory] = useState([]);
+
     useEffect(() => {
-        if (!website) {
-            return;
-        }
-        api.request(`/websites/${website.id}/history?from=${period[0].format()}&to=${period[1].format()}`).then(setHistory);
-    }, [website]);
+        api.website(params.id).then(setWebsite);
+        api.checks(params.id, ...period).then(setChecks);
+        api.history(params.id, ...period).then(setHistory);
+    }, [params.id]);
 
     if (!website) {
         return null;
@@ -50,21 +39,20 @@ export default ({ params }) => {
             <table className={style.table}>
                 <tbody>
                     {history.map(entry => (
-                        <tr key={entry.startedAt}>
+                        <tr key={entry.time}>
                             <td>
-                                <Moment date={entry.startedAt} format="MMM DD, h:mma" />
+                                <Moment date={entry.time} format="MMM DD, h:mma" />
                             </td>
                             <td
                                 className={c(style.status, {
-                                    [style.red]: entry.statusCode !== 200
+                                    [style.bad]: entry.status !== "up"
                                 })}
                             >
-                                {entry.statusCode}
+                                {entry.status === "up" ? "Up" : "Down"}
                             </td>
                             <td>
-                                <Period value={entry.period} />
+                                <Duration value={entry.duration} />
                             </td>
-                            <td>{(entry.averageDuration / 1000).toFixed(2)}s</td>
                         </tr>
                     ))}
                 </tbody>

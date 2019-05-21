@@ -21,7 +21,7 @@ type (
 
 	// Timeline ...
 	Timeline struct {
-		Connection, DNS, Dial, TLS, Request, Application, Response time.Time
+		Connection, DNS, Dial, TLS, Request, Wait, Response time.Time
 	}
 )
 
@@ -39,7 +39,7 @@ func New(endpoint, key string) *Agent {
 func (a *Agent) Check(website *api.Website) (*api.Check, error) {
 	check := &api.Check{
 		WebsiteID: website.ID,
-		Breakdown: &api.Breakdown{},
+		Latency:   &api.Latency{},
 	}
 	timeline := &Timeline{}
 	trace := &httptrace.ClientTrace{
@@ -47,38 +47,43 @@ func (a *Agent) Check(website *api.Website) (*api.Check, error) {
 			timeline.DNS = time.Now()
 		},
 		DNSDone: func(_ httptrace.DNSDoneInfo) {
-			check.Breakdown.DNS = time.Since(timeline.DNS) / time.Millisecond
+			check.Latency.DNS = time.Since(timeline.DNS) / time.Millisecond
 		},
 		ConnectStart: func(_, _ string) {
 			timeline.Connection = time.Now()
 		},
 		ConnectDone: func(_, _ string, _ error) {
-			check.Breakdown.Connection = time.Since(timeline.Connection) / time.Millisecond
+			check.Latency.Connection = time.Since(timeline.Connection) / time.Millisecond
 		},
 		TLSHandshakeStart: func() {
 			timeline.TLS = time.Now()
 		},
 		TLSHandshakeDone: func(_ tls.ConnectionState, _ error) {
-			check.Breakdown.TLS = time.Since(timeline.TLS) / time.Millisecond
+			check.Latency.TLS = time.Since(timeline.TLS) / time.Millisecond
 		},
 		WroteRequest: func(_ httptrace.WroteRequestInfo) {
-			timeline.Application = time.Now()
+			timeline.Wait = time.Now()
 		},
 		GotFirstResponseByte: func() {
-			check.Breakdown.Application = time.Since(timeline.Application) / time.Millisecond
+			check.Latency.Application = time.Since(timeline.Wait) / time.Millisecond
 		},
 	}
 	req, err := http.NewRequest("GET", website.URL, nil)
 	if err != nil {
 		return nil, err
 	}
-	req = req.WithContext(httptrace.WithClientTrace(req.Context(), trace))
-	resp, err := a.client.Do(req)
+	_, err = a.client.Do(req.WithContext(httptrace.WithClientTrace(req.Context(), trace)))
 	if err != nil {
 		return nil, err
 	}
-	check.Duration = check.Breakdown.Total()
-	check.StatusCode = resp.StatusCode
+	check.Latency.Total = check.Latency.DNS + check.Latency.TLS +
+		check.Latency.Connection + check.Latency.Application
+
+	// What defines a successful check?
+	// For now we look for a status code of 200 but it'll changed
+	// in the future and even be configurable on a per site basis.
+	check.Result = api.ResultUp
+
 	return check, nil
 }
 
