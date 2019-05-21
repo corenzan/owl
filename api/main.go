@@ -239,10 +239,9 @@ func handleListHistory(c echo.Context) error {
 	if httpErr != nil {
 		return httpErr
 	}
-	history := []*Entry{}
-	q = `select checked_at as time, result as status, extract(epoch from lag(checked_at, 1, current_timestamp) over 
-		(order by checked_at desc) - checked_at)::int as duration from checks where website_id = $1 and 
-		checked_at between $2::timestamptz and $3::timestamptz order by checked_at desc`
+	q = `select checked_at as time, result as status, extract(epoch from lag(checked_at, 1, current_timestamp) 
+	over (order by checked_at desc) - checked_at)::int as duration from checks where website_id = $1 and 
+	checked_at between $2::timestamptz and $3::timestamptz order by checked_at desc;`
 	rows, err := db.Query(q, c.Param("id"), after, before)
 	if err != nil {
 		if err != pgx.ErrNoRows {
@@ -250,12 +249,20 @@ func handleListHistory(c echo.Context) error {
 		}
 	}
 	defer rows.Close()
+	history := []*Entry{}
+	previousEntry := &Entry{}
 	for rows.Next() {
 		entry := &Entry{}
 		if err := rows.Scan(&entry.Time, &entry.Status, &entry.Duration); err != nil {
 			panic(err)
 		}
-		history = append(history, entry)
+		if previousEntry.Status == entry.Status {
+			previousEntry.Time = entry.Time
+			previousEntry.Duration += entry.Duration
+		} else {
+			previousEntry = entry
+			history = append(history, entry)
+		}
 	}
 	if err := c.JSON(http.StatusOK, history); err != nil {
 		panic(err)
