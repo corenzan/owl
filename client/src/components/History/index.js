@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useContext } from "react";
 import Moment from "react-moment";
-import { Link } from "wouter";
 import c from "classnames";
 
 import api from "../../api.js";
