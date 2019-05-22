@@ -31,6 +31,7 @@ export default () => {
                     placeholder="Search…"
                     onChange={e => setQuery(e.target.value)}
                     onKeyDown={e => onKeyDown(e)}
+                    aria-label="Search Websites"
                 />
             </header>
             {websites

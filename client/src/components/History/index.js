@@ -11,6 +11,26 @@ import Website from "../Website";
 
 import style from "./style.module.css";
 
+const Entry = ({ entry }) => (
+    <tr key={entry.time}>
+        <td>
+            <Moment date={entry.time} format="MMM DD, h:mma" />
+        </td>
+        <td>
+            <span
+                className={c(style.status, {
+                    [style.bad]: entry.status !== "up"
+                })}
+            >
+                {entry.status === "up" ? "Up" : "Down"}
+            </span>
+        </td>
+        <td>
+            <Duration value={entry.duration} />
+        </td>
+    </tr>
+);
+
 export default ({ params }) => {
     const { period } = useContext(appContext);
 
@@ -37,21 +57,7 @@ export default ({ params }) => {
             <table className={style.table}>
                 <tbody>
                     {history.map(entry => (
-                        <tr key={entry.time}>
-                            <td>
-                                <Moment date={entry.time} format="MMM DD, h:mma" />
-                            </td>
-                            <td
-                                className={c(style.status, {
-                                    [style.bad]: entry.status !== "up"
-                                })}
-                            >
-                                {entry.status === "up" ? "Up" : "Down"}
-                            </td>
-                            <td>
-                                <Duration value={entry.duration} />
-                            </td>
-                        </tr>
+                        <Entry key={entry.time} entry={entry} />
                     ))}
                 </tbody>
             </table>
