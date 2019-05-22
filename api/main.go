@@ -154,14 +154,22 @@ func handleGetWebsiteAggregate(c echo.Context) error {
 		return httpErr
 	}
 	aggregate := &Aggregate{}
-	q = `select count(*) over (partition by website_id) as count, 
-		max((latency->>'total')::numeric) over (partition by website_id) as highest, 
+	q = `select count(id) from checks where website_id = $1 
+		and checked_at between $2::timestamptz and $3::timestamptz;`
+	if err := db.QueryRow(q, c.Param("id"), after, before).Scan(&aggregate.Count); err != nil {
+		if err != pgx.ErrNoRows {
+			panic(err)
+		}
+	}
+	q = `select max((latency->>'total')::numeric) over (partition by website_id) as highest, 
 		avg((latency->>'total')::numeric) over (partition by website_id) as average, 
 		min((latency->>'total')::numeric) over (partition by website_id) as lowest 
-		from checks where website_id = $1 and checked_at between $2::timestamptz and $3::timestamptz 
-		order by checked_at desc;`
-	if err := db.QueryRow(q, c.Param("id"), after, before).Scan(&aggregate.Count, &aggregate.Highest, &aggregate.Average, &aggregate.Lowest); err != nil {
-		panic(err)
+		from checks where result = 'up' and website_id = $1 
+		and checked_at between $2::timestamptz and $3::timestamptz;`
+	if err := db.QueryRow(q, c.Param("id"), after, before).Scan(&aggregate.Highest, &aggregate.Average, &aggregate.Lowest); err != nil {
+		if err != pgx.ErrNoRows {
+			panic(err)
+		}
 	}
 	if err := c.JSON(http.StatusOK, aggregate); err != nil {
 		panic(err)
