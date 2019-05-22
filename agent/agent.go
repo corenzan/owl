@@ -30,7 +30,7 @@ func New(endpoint, key string) *Agent {
 	return &Agent{
 		api: api.New(endpoint, key),
 		client: &http.Client{
-			Timeout: time.Second * 5,
+			Timeout: time.Second * 10,
 		},
 	}
 }
