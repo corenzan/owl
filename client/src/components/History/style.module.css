@@ -1,6 +1,5 @@
-.blank {
-    font-size: 1.25em;
-    padding: 3rem;
+.history {
+    --alternate-background: var(--khaki-light-background);
 }
 
 .topbar {
@@ -18,7 +17,7 @@
 }
 
 .table tr:nth-child(2n + 1) {
-    background-color: var(--khaki-light-background);
+    background-color: var(--alternate-background);
 }
 
 .table td {

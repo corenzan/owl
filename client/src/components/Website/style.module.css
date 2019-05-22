@@ -1,10 +1,17 @@
 .website {
+    line-height: 1.25;
+    width: 100%;
+}
+
+.row {
     align-items: center;
     display: flex;
     height: 3.75rem;
-    line-height: 1.25;
     padding: 0 0.5rem;
-    width: 100%;
+}
+
+.row.justified {
+    justify-content: center;
 }
 
 .segment {
@@ -25,12 +32,18 @@
     white-space: nowrap;
 }
 
-.spaced + .spaced {
-    margin-left: 1.5rem;
+.row:nth-child(2) {
+    background-color: var(--alternate-background);
+}
+
+@media screen and (min-width: 769px) {
+    .mobile {
+        display: none;
+    }
 }
 
 @media screen and (max-width: 768px) {
-    .extended {
+    .desktop {
         display: none;
     }
 }
