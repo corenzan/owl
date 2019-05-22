@@ -10,7 +10,7 @@
     fill: var(--positive);
 }
 
-.overlay.red {
+.overlay.bad {
     fill: var(--negative);
 }
 

@@ -4,8 +4,8 @@ import c from "classnames";
 import style from "./style.module.css";
 import moment from "moment";
 
-const maxLatency = 5000;
-const height = 96;
+const maxLatency = 10000;
+const height = 128;
 const barWidth = 12;
 const barStroke = 2;
 
@@ -13,10 +13,9 @@ const Bar = ({ index, check }) => {
     const x = barWidth * index;
     const y = check.latency.total / maxLatency;
 
-    const dnsRatio = check.latency.dns / check.latency.total;
-    const connectionRatio = check.latency.connection / check.latency.total;
-    const tlsRatio = check.latency.tls / check.latency.total;
-    // const applicationRatio = check.latency.application / check.latency.total;
+    const dns = (check.latency.dns / (check.latency.total || 1)) * 100;
+    const connection = (check.latency.connection / (check.latency.total || 1)) * 100;
+    const tls = (check.latency.tls / (check.latency.total || 1)) * 100;
 
     return (
         <g className={style.area}>
@@ -26,24 +25,26 @@ const Bar = ({ index, check }) => {
                 {check.latency.application}
                 ms / Total: {check.latency.total}ms
             </title>
-            <defs>
-                <linearGradient id={"fill" + index} x1="0%" y1="100%" x2="0%" y2="0%">
-                    <stop offset="0%" stopColor="#444" />
-                    <stop offset={dnsRatio * 100 + "%"} stopColor="#444" />
-                    <stop offset={dnsRatio * 100 + "%"} stopColor="#666" />
-                    <stop offset={(dnsRatio + connectionRatio) * 100 + "%"} stopColor="#666" />
-                    <stop offset={(dnsRatio + connectionRatio) * 100 + "%"} stopColor="#888" />
-                    <stop offset={(dnsRatio + connectionRatio + tlsRatio) * 100 + "%"} stopColor="#888" />
-                    <stop offset={(dnsRatio + connectionRatio + tlsRatio) * 100 + "%"} stopColor="#aaa" />
-                    <stop offset="100%" stopColor="#aaa" />
-                </linearGradient>
-            </defs>
+            {check.latency.total > 0 ? (
+                <defs>
+                    <linearGradient id={"fill" + index} x1="0%" y1="100%" x2="0%" y2="0%">
+                        <stop offset="0%" stopColor="#444" />
+                        <stop offset={dns + "%"} stopColor="#444" />
+                        <stop offset={dns + "%"} stopColor="#666" />
+                        <stop offset={dns + connection + "%"} stopColor="#666" />
+                        <stop offset={dns + connection + "%"} stopColor="#888" />
+                        <stop offset={dns + connection + tls + "%"} stopColor="#888" />
+                        <stop offset={dns + connection + tls + "%"} stopColor="#aaa" />
+                        <stop offset="100%" stopColor="#aaa" />
+                    </linearGradient>
+                </defs>
+            ) : null}
             <rect
                 width={barWidth - barStroke * 2}
-                height={height * y}
+                height={Math.round((height - 1) * y) + 1}
                 x={x + barStroke}
-                y={height * (1 - y)}
-                fill={"url(#fill" + index + ")"}
+                y={Math.round(height * (1 - y))}
+                fill={check.latency.total > 0 ? "url(#fill" + index + ")" : "#aaa"}
                 className={style.bar}
             />
             <rect width={barWidth} height={height} x={x} className={c(style.overlay, { [style.bad]: check.result !== "up" })} />
