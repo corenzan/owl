@@ -31,7 +31,7 @@ export default ({ params }) => {
     return (
         <div className={style.history}>
             <header className={style.topbar}>
-                <Website website={website} />
+                <Website website={website} extended />
             </header>
             <div className={style.chart}>{checks.length ? <Chart checks={checks} /> : null}</div>
             <table className={style.table}>

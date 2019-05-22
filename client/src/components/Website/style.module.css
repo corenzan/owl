@@ -8,10 +8,11 @@
 }
 
 .segment {
-    padding: 0 0.5rem;
+    margin: 0 0.5rem;
+    white-space: nowrap;
 }
 
-.timestamp {
+.label {
     display: block;
     line-height: 1.5;
     opacity: 0.75;
@@ -24,13 +25,12 @@
     white-space: nowrap;
 }
 
-.detail {
-    display: block;
-    line-height: 1.5;
-    opacity: 0.75;
+.spaced + .spaced {
+    margin-left: 1.5rem;
 }
 
-.uptime {
-    text-align: right;
-    white-space: nowrap;
+@media screen and (max-width: 768px) {
+    .extended {
+        display: none;
+    }
 }
