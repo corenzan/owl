@@ -76,8 +76,11 @@ func (a *Agent) Check(website *api.Website) (*api.Check, error) {
 	if err != nil {
 		return nil, err
 	}
-	_, err = a.client.Do(req.WithContext(httptrace.WithClientTrace(req.Context(), trace)))
+	resp, err := a.client.Do(req.WithContext(httptrace.WithClientTrace(req.Context(), trace)))
 	if err != nil {
+		check.Result = api.ResultDown
+	}
+	if resp.StatusCode >= 500 {
 		check.Result = api.ResultDown
 	}
 	check.Latency.Total = check.Latency.DNS + check.Latency.TLS +
