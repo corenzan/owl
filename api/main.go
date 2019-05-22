@@ -44,6 +44,7 @@ type (
 	// Stats ...
 	Stats struct {
 		Uptime  float64 `json:"uptime"`
+		Apdex   float64 `json:"apdex"`
 		Average float64 `json:"average"`
 		Lowest  float64 `json:"lowest"`
 		Highest float64 `json:"highest"`
@@ -66,6 +67,9 @@ const (
 
 	resultUp   = "up"
 	resultDown = "down"
+
+	// Threshold of a satisfactory request, in ms.
+	apdexThreshold = 2000
 )
 
 var db *pgx.ConnPool
@@ -134,6 +138,15 @@ func handleGetWebsiteStats(c echo.Context) error {
 			panic(err)
 		}
 	}
+	q = `select (count(*) filter (where result = 'up' and (latency->>'total')::float < $1) 
+		+ count(*) filter (where result = 'up' and (latency->>'total')::float >= $1) / 2)
+		/ (case count(*) when 0 then 1 else count(*)::float end) as apdex from checks where website_id = $2 
+		and checked_at between $3::timestamptz and $4::timestamptz;`
+	if err := db.QueryRow(q, apdexThreshold, c.Param("id"), after, before).Scan(&stats.Apdex); err != nil {
+		if err != pgx.ErrNoRows {
+			panic(err)
+		}
+	}
 	q = `select 
 		avg((latency->>'total')::numeric) over (partition by website_id) as average, 
 		min((latency->>'total')::numeric) over (partition by website_id) as lowest,
@@ -144,7 +157,7 @@ func handleGetWebsiteStats(c echo.Context) error {
 			panic(err)
 		}
 	}
-	q = `select count(id) from checks where website_id = $1 
+	q = `select count(*) from checks where website_id = $1 
 		and checked_at between $2::timestamptz and $3::timestamptz;`
 	if err := db.QueryRow(q, c.Param("id"), after, before).Scan(&stats.Count); err != nil {
 		if err != pgx.ErrNoRows {
