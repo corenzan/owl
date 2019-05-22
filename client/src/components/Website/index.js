@@ -2,7 +2,6 @@ import React, { useState, useEffect, useContext } from "react";
 import Moment from "react-moment";
 import c from "classnames";
 
-import Breakpoint from "../Breakpoint";
 import Indicator from "../Indicator";
 import { appContext } from "../App";
 import api from "../../api.js";
