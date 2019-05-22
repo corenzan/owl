@@ -41,12 +41,13 @@ type (
 		Latency   *Latency  `json:"latency"`
 	}
 
-	// Aggregate ...
-	Aggregate struct {
-		Count   uint    `json:"count"`
-		Highest float64 `json:"highest"`
+	// Stats ...
+	Stats struct {
+		Uptime  float64 `json:"uptime"`
 		Average float64 `json:"average"`
 		Lowest  float64 `json:"lowest"`
+		Highest float64 `json:"highest"`
+		Count   uint    `json:"count"`
 	}
 
 	// Entry ...
@@ -112,35 +113,7 @@ func handleAfterBeforeQueryParams(c echo.Context) (time.Time, time.Time, *echo.H
 	return after, before, nil
 }
 
-func exist(q string, args ...interface{}) {
-}
-
-func handleGetWebsiteUptime(c echo.Context) error {
-	var found bool
-	q := `select true from websites where id = $1 limit 1;`
-	if err := db.QueryRow(q, c.Param("id")).Scan(&found); err != nil {
-		if err == pgx.ErrNoRows {
-			return echo.NewHTTPError(http.StatusNotFound)
-		}
-		panic(err)
-	}
-	after, before, httpErr := handleAfterBeforeQueryParams(c)
-	if httpErr != nil {
-		return httpErr
-	}
-	uptime := 0.0
-	q = `select percentage(sum(case result when $1 then 1 else 0 end), count(result)) as uptime 
-		from checks where website_id = $2 and checked_at between $3::timestamptz and $4::timestamptz;`
-	if err := db.QueryRow(q, resultUp, c.Param("id"), after, before).Scan(&uptime); err != nil {
-		panic(err)
-	}
-	if err := c.JSON(http.StatusOK, uptime); err != nil {
-		panic(err)
-	}
-	return nil
-}
-
-func handleGetWebsiteAggregate(c echo.Context) error {
+func handleGetWebsiteStats(c echo.Context) error {
 	var found bool
 	q := `select true from websites where id = $1 limit 1`
 	if err := db.QueryRow(q, c.Param("id")).Scan(&found); err != nil {
@@ -153,25 +126,32 @@ func handleGetWebsiteAggregate(c echo.Context) error {
 	if httpErr != nil {
 		return httpErr
 	}
-	aggregate := &Aggregate{}
+	stats := &Stats{}
+	q = `select percentage(count(*) filter (where result = 'up'), count(result)) as uptime 
+		from checks where website_id = $1 and checked_at between $2::timestamptz and $3::timestamptz;`
+	if err := db.QueryRow(q, c.Param("id"), after, before).Scan(&stats.Uptime); err != nil {
+		if err != pgx.ErrNoRows {
+			panic(err)
+		}
+	}
+	q = `select 
+		avg((latency->>'total')::numeric) over (partition by website_id) as average, 
+		min((latency->>'total')::numeric) over (partition by website_id) as lowest,
+		max((latency->>'total')::numeric) over (partition by website_id) as highest
+		from checks where result = 'up' and website_id = $1 and checked_at between $2::timestamptz and $3::timestamptz;`
+	if err := db.QueryRow(q, c.Param("id"), after, before).Scan(&stats.Average, &stats.Lowest, &stats.Highest); err != nil {
+		if err != pgx.ErrNoRows {
+			panic(err)
+		}
+	}
 	q = `select count(id) from checks where website_id = $1 
 		and checked_at between $2::timestamptz and $3::timestamptz;`
-	if err := db.QueryRow(q, c.Param("id"), after, before).Scan(&aggregate.Count); err != nil {
+	if err := db.QueryRow(q, c.Param("id"), after, before).Scan(&stats.Count); err != nil {
 		if err != pgx.ErrNoRows {
 			panic(err)
 		}
 	}
-	q = `select max((latency->>'total')::numeric) over (partition by website_id) as highest, 
-		avg((latency->>'total')::numeric) over (partition by website_id) as average, 
-		min((latency->>'total')::numeric) over (partition by website_id) as lowest 
-		from checks where result = 'up' and website_id = $1 
-		and checked_at between $2::timestamptz and $3::timestamptz;`
-	if err := db.QueryRow(q, c.Param("id"), after, before).Scan(&aggregate.Highest, &aggregate.Average, &aggregate.Lowest); err != nil {
-		if err != pgx.ErrNoRows {
-			panic(err)
-		}
-	}
-	if err := c.JSON(http.StatusOK, aggregate); err != nil {
+	if err := c.JSON(http.StatusOK, stats); err != nil {
 		panic(err)
 	}
 	return nil
@@ -338,8 +318,7 @@ func main() {
 
 	e.GET("/websites", handleListWebsites)
 	e.GET("/websites/:id", handleGetWebsite)
-	e.GET("/websites/:id/uptime", handleGetWebsiteUptime)
-	e.GET("/websites/:id/aggregate", handleGetWebsiteAggregate)
+	e.GET("/websites/:id/stats", handleGetWebsiteStats)
 	e.GET("/websites/:id/checks", handleListChecks)
 	e.GET("/websites/:id/history", handleListHistory)
 

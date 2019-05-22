@@ -20,12 +20,8 @@ export default {
         return request(`/websites/${id}`);
     },
 
-    uptime(id, after, before) {
-        return request(`/websites/${id}/uptime?after=${moment(after).toISOString()}&before=${moment(before).toISOString()}`);
-    },
-
-    aggregate(id, after, before) {
-        return request(`/websites/${id}/aggregate?after=${moment(after).toISOString()}&before=${moment(before).toISOString()}`);
+    stats(id, after, before) {
+        return request(`/websites/${id}/stats?after=${moment(after).toISOString()}&before=${moment(before).toISOString()}`);
     },
 
     checks(id, after, before) {

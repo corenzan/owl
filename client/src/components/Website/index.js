@@ -9,13 +9,11 @@ import api from "../../api.js";
 import style from "./style.module.css";
 
 export default ({ website, extended, onClick }) => {
-    const [uptime, setUptime] = useState(0);
-    const [stats, setStats] = useState(null);
+    const [stats, setStats] = useState({});
     const { period } = useContext(appContext);
 
     useEffect(() => {
-        api.uptime(website.id, ...period).then(setUptime);
-        api.aggregate(website.id, ...period).then(setStats);
+        api.stats(website.id, ...period).then(setStats);
     }, [website.id]);
 
     return (
@@ -49,11 +47,11 @@ export default ({ website, extended, onClick }) => {
                     </div>
                     <div className={c(style.segment, style.spaced)}>
                         <small className={style.label}>Uptime</small>
-                        {uptime % 1 > 0 ? uptime.toFixed(4) : uptime}%
+                        {stats.uptime % 1 > 0 ? stats.uptime.toFixed(4) : stats.uptime}%
                     </div>
                 </>
             ) : (
-                <div className={style.segment}>{uptime % 1 > 0 ? uptime.toFixed(4) : uptime}%</div>
+                <div className={style.segment}>{stats.uptime % 1 > 0 ? stats.uptime.toFixed(4) : stats.uptime}%</div>
             )}
         </div>
     );
