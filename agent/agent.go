@@ -31,6 +31,9 @@ func New(endpoint, key string) *Agent {
 		api: api.New(endpoint, key),
 		client: &http.Client{
 			Timeout: time.Second * 10,
+			CheckRedirect: func(_ *http.Request, _ []*http.Request) error {
+				return http.ErrUseLastResponse
+			},
 		},
 	}
 }
