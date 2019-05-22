@@ -171,7 +171,7 @@ func handleListWebsites(c echo.Context) error {
 	q := `select id, url, status, updated_at from websites order by status desc;`
 	checkable := c.QueryParam("checkable")
 	if checkable != "" {
-		q = `select id, url, status, updated_at from websites where status != 'maintenance' order by status desc;`
+		q = `select id, url, status, updated_at from websites where status != 'maintenance' order by status desc, updated_at desc;`
 	}
 	rows, err := db.Query(q)
 	if err != nil {
