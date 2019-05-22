@@ -7,6 +7,7 @@
         <meta name="application-name" content="Owl" />
         <meta name="msapplication-TileColor" content="#7e5c62" />
         <meta name="theme-color" content="#7e5c62" />
+        <meta name="description" content="Website monitoring and uptime report." />
         <link rel="preconnect" href="%REACT_APP_API_URL%" />
         <link rel="shortcut icon" href="%PUBLIC_URL%/favicon.ico" />
         <link rel="apple-touch-icon" sizes="180x180" href="%PUBLIC_URL%/apple-touch-icon.png" />
@@ -14,7 +15,12 @@
         <link rel="icon" type="image/png" sizes="16x16" href="%PUBLIC_URL%/favicon-16x16.png" />
         <link rel="mask-icon" color="#7e5c62" href="%PUBLIC_URL%/safari-pinned-tab.svg" />
         <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Arimo:400,700" />
+        <link
+            rel="preload"
+            href="https://fonts.googleapis.com/css?family=Arimo:400,700"
+            as="style"
+            onload="this.rel='stylesheet'"
+        />
         <title>Owl — Dashboard</title>
     </head>
     <body>
