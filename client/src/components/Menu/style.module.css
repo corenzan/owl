@@ -1,27 +1,7 @@
 .menu {
     background-color: var(--chocolate);
-    color: #f0e7e5;
+    color: hsla(0, 100%, 100%, 87.5%);
     min-height: 100%;
-}
-
-.topbar {
-    align-items: center;
-    background-color: var(--chocolate);
-    display: flex;
-    height: 4.5rem;
-    justify-content: space-between;
-    padding: 0 1.125rem;
-    position: sticky;
-    top: 0;
-    z-index: 10;
-}
-
-.brand {
-    font-size: 1.5em;
-}
-
-.owl {
-    width: 3rem;
 }
 
 .row {

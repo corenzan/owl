@@ -30,11 +30,9 @@ export default ({ params }) => {
 
     return (
         <div className={style.history}>
-            <Link href="/">
-                <a className={style.topbar} href="/">
-                    <Website website={website} />
-                </a>
-            </Link>
+            <header className={style.topbar}>
+                <Website website={website} />
+            </header>
             <div className={style.chart}>{checks.length ? <Chart checks={checks} /> : null}</div>
             <table className={style.table}>
                 <tbody>

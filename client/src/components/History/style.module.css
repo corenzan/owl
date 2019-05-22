@@ -4,15 +4,13 @@
 }
 
 .topbar {
-    align-items: center;
     background-color: var(--sienna-light-background);
-    display: flex;
-    height: 4.5rem;
-    justify-content: space-between;
-    padding: 0;
     position: sticky;
     top: 0;
-    z-index: 10;
+}
+
+.topbar a {
+    display: block;
 }
 
 .chart {

@@ -1,33 +1,64 @@
 .container {
-  display: flex;
-  height: 100%;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
 }
 
-.main,
-.aside {
-  -webkit-overflow-scrolling: touch;
-  height: 100%;
-  max-width: 100%;
-  overflow: auto;
+.topbar {
+    align-items: center;
+    background-color: var(--chocolate);
+    color: hsla(0, 100%, 100%, 87.5%);
+    display: flex;
+    flex: 0 0 auto;
+    height: 4.5rem;
+    justify-content: space-between;
+    padding: 0 1.125rem;
 }
 
-.aside {
-  flex: 0 0 24rem;
+.brand,
+.period {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.brand {
+    font-size: 1.5em;
 }
 
 .main {
-  flex: 0 1 100%;
+    display: flex;
+    flex: 0 1 100%;
+    position: relative;
+    min-height: 0;
+}
+
+.aside,
+.content {
+    -webkit-overflow-scrolling: touch;
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.aside {
+    flex: 0 0 30%;
+    min-width: 20rem;
+}
+
+.content {
+    flex: 0 1 100%;
 }
 
 @media screen and (max-width: 768px) {
-  .aside {
-    display: none;
-    position: absolute;
-    width: 100%;
-    z-index: 100;
-  }
+    .aside {
+        display: none;
+        position: absolute;
+        width: 100%;
+        z-index: 100;
+    }
 
-  .aside.open {
-    display: block;
-  }
+    .aside.open {
+        display: block;
+    }
 }
