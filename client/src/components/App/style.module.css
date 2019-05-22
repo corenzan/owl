@@ -5,9 +5,11 @@
 }
 
 .topbar {
+    --background: var(--chocolate);
+    --foreground: var(--khaki-light-background);
     align-items: center;
-    background-color: var(--chocolate);
-    color: hsla(0, 100%, 100%, 87.5%);
+    background-color: var(--background);
+    color: var(--foreground);
     display: flex;
     flex: 0 0 auto;
     height: 4.5rem;

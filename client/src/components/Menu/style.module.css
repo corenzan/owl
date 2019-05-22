@@ -1,16 +1,22 @@
 .menu {
-    background-color: var(--chocolate);
-    color: hsla(0, 100%, 100%, 87.5%);
+    --background: var(--chocolate);
+    --foreground: var(--khaki-light-background);
+    background-color: var(--background);
+    color: var(--foreground);
     min-height: 100%;
 }
 
 .search {
-    background-color: hsla(0, 0%, 0%, 25%);
+    background-color: var(--background);
+    position: sticky;
+    top: 0;
+    z-index: 10;
 }
 
 .search input {
-    width: 100%;
+    background-color: hsla(0, 0%, 0%, 25%);
     padding: 1rem;
+    width: 100%;
 }
 
 .row {
