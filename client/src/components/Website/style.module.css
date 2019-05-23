@@ -19,6 +19,15 @@
     white-space: nowrap;
 }
 
+.stats {
+    align-items: center;
+    display: flex;
+}
+
+.stats > * + * {
+    margin-left: 1.5rem;
+}
+
 .label {
     display: block;
     line-height: 1.5;

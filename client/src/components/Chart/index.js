@@ -7,7 +7,7 @@ import moment from "moment";
 const maxLatency = 10000;
 const height = 128;
 const step = 12;
-const barStroke = 2;
+const stroke = 1;
 
 const Bar = ({ index, check }) => {
     const x = step * index;
@@ -40,10 +40,10 @@ const Bar = ({ index, check }) => {
                 </defs>
             ) : null}
             <rect
-                width={step - barStroke * 2}
-                height={Math.round((height - 1) * y) + 1}
-                x={x + barStroke}
-                y={Math.round(height * (1 - y))}
+                width={step - stroke * 2}
+                height={Math.ceil((height - 1) * y) + 1}
+                x={x + stroke}
+                y={Math.ceil((height - 1) * (1 - y)) - 1}
                 fill={check.latency.total > 0 ? "url(#fill" + index + ")" : "#aaa"}
                 className={style.bar}
             />
@@ -128,7 +128,7 @@ export default ({ checks }) => {
 
     return (
         <svg
-            className={style.chart}
+            className={style.svg}
             role="img"
             ref={ref}
             viewBox={viewBox}

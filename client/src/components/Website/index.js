@@ -8,6 +8,43 @@ import Indicator from "../Indicator";
 
 import style from "./style.module.css";
 
+const Apdex = ({ value, className }) => (
+    <div className={className}>
+        <small className={style.label}>Apdex</small>
+        {value ? value.toFixed(2) : "0.00"}
+    </div>
+);
+const Average = ({ value, className }) => (
+    <div className={className}>
+        <small className={style.label}>Average</small>
+        {value ? (value / 1000).toFixed(2) : "0.00"}s
+    </div>
+);
+const Lowest = ({ value, className }) => (
+    <div className={className}>
+        <small className={style.label}>Lowest</small>
+        {value ? (value / 1000).toFixed(2) : "0.00"}s
+    </div>
+);
+const Highest = ({ value, className }) => (
+    <div className={className}>
+        <small className={style.label}>Highest</small>
+        {value ? (value / 1000).toFixed(2) : "0.00"}s
+    </div>
+);
+const Checks = ({ value, className }) => (
+    <div className={className}>
+        <small className={style.label}>Checks</small>
+        {value ? value : "0"}
+    </div>
+);
+const Uptime = ({ value, className, label }) => (
+    <div className={className}>
+        {label ? <small className={style.label}>Uptime</small> : null}
+        {value ? (value % 1 > 0 ? value.toFixed(4) : value) : 0}%
+    </div>
+);
+
 export default ({ website, extended, onClick }) => {
     const [stats, setStats] = useState(null);
     const { period } = useContext(appContext);
@@ -29,59 +66,30 @@ export default ({ website, extended, onClick }) => {
                     </small>
                 </div>
                 {extended ? (
-                    <>
-                        <div className={c(style.segment, style.desktop)}>
-                            <small className={style.label}>Apdex</small>
-                            {stats ? stats.apdex.toFixed(2) : "0.00"}
-                        </div>
-                        <div className={c(style.segment, style.desktop)}>
-                            <small className={style.label}>Average</small>
-                            {stats ? (stats.average / 1000).toFixed(2) : "0.00"}s
-                        </div>
-                        <div className={c(style.segment, style.desktop)}>
-                            <small className={style.label}>Lowest</small>
-                            {stats ? (stats.lowest / 1000).toFixed(2) : "0.00"}s
-                        </div>
-                        <div className={c(style.segment, style.desktop)}>
-                            <small className={style.label}>Highest</small>
-                            {stats ? (stats.highest / 1000).toFixed(2) : "0.00"}s
-                        </div>
-                        <div className={c(style.segment, style.desktop)}>
-                            <small className={style.label}>Checks</small>
-                            {stats ? stats.count : "0"}
-                        </div>
-                        <div className={style.segment}>
-                            <small className={style.label}>Uptime</small>
-                            {stats ? (stats.uptime % 1 > 0 ? stats.uptime.toFixed(4) : stats.uptime) : 0}%
-                        </div>
-                    </>
+                    <div className={c(style.segment, style.stats, style.desktop)}>
+                        <Apdex value={stats && stats.apdex} />
+                        <Average value={stats && stats.average} />
+                        <Lowest value={stats && stats.lowest} />
+                        <Highest value={stats && stats.highest} />
+                        <Checks value={stats && stats.count} />
+                        <Uptime value={stats && stats.uptime} label />
+                    </div>
                 ) : (
                     <div className={style.segment}>
-                        {stats ? (stats.uptime % 1 > 0 ? stats.uptime.toFixed(4) : stats.uptime) : 0}%
+                        <Uptime value={stats && stats.uptime} />
                     </div>
                 )}
             </div>
             {extended ? (
-                <div className={c(style.row, style.justified, style.mobile)}>
-                    <div className={style.segment}>
-                        <small className={style.label}>Apdex</small>
-                        {stats ? stats.apdex.toFixed(2) : "0.00"}
-                    </div>
-                    <div className={style.segment}>
-                        <small className={style.label}>Average</small>
-                        {stats ? (stats.average / 1000).toFixed(2) : "0.00"}s
-                    </div>
-                    <div className={style.segment}>
-                        <small className={style.label}>Lowest</small>
-                        {stats ? (stats.lowest / 1000).toFixed(2) : "0.00"}s
-                    </div>
-                    <div className={style.segment}>
-                        <small className={style.label}>Highest</small>
-                        {stats ? (stats.highest / 1000).toFixed(2) : "0.00"}s
-                    </div>
-                    <div className={style.segment}>
-                        <small className={style.label}>Checks</small>
-                        {stats ? stats.count : "0"}
+                <div className={c(style.row, style.mobile)}>
+                    <div className={c(style.segment, style.stats)}>
+                        <Uptime value={stats && stats.uptime} label />
+
+                        <Apdex value={stats && stats.apdex} />
+                        <Average value={stats && stats.average} />
+                        <Lowest value={stats && stats.lowest} />
+                        <Highest value={stats && stats.highest} />
+                        <Checks value={stats && stats.count} />
                     </div>
                 </div>
             ) : null}

@@ -1,6 +1,5 @@
 .svg {
-    display: block;
-    margin: 0 auto;
+    background-color: white;
 }
 
 .area:hover .bar {
@@ -17,6 +16,7 @@
 }
 
 .bar {
-    rx: 1;
-    ry: 1;
+    /* transition: all 0.125s ease-out; */
+    rx: 2;
+    ry: 2;
 }
