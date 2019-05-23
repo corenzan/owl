@@ -1,4 +1,6 @@
-.area {
+.svg {
+    display: block;
+    margin: 0 auto;
 }
 
 .area:hover .bar {
@@ -15,7 +17,6 @@
 }
 
 .bar {
-    transition: all 0.25s ease-out;
     rx: 1;
     ry: 1;
 }
