@@ -25,7 +25,7 @@
 }
 
 .stats > * + * {
-    margin-left: 1.5rem;
+    margin-left: 1rem;
 }
 
 .label {
@@ -48,6 +48,10 @@
 @media screen and (min-width: 769px) {
     .mobile {
         display: none;
+    }
+
+    .stats > * + * {
+        margin-left: 1.5rem;
     }
 }
 

@@ -8,6 +8,12 @@ import Indicator from "../Indicator";
 
 import style from "./style.module.css";
 
+const Uptime = ({ value, className, label }) => (
+    <div className={className}>
+        {label ? <small className={style.label}>Uptime</small> : null}
+        {value ? (value % 1 > 0 ? value.toFixed(2) : value) : 0}%
+    </div>
+);
 const Apdex = ({ value, className }) => (
     <div className={className}>
         <small className={style.label}>Apdex</small>
@@ -36,12 +42,6 @@ const Checks = ({ value, className }) => (
     <div className={className}>
         <small className={style.label}>Checks</small>
         {value ? value : "0"}
-    </div>
-);
-const Uptime = ({ value, className, label }) => (
-    <div className={className}>
-        {label ? <small className={style.label}>Uptime</small> : null}
-        {value ? (value % 1 > 0 ? value.toFixed(4) : value) : 0}%
     </div>
 );
 
