@@ -13,7 +13,7 @@ import style from "./style.module.css";
 export const appContext = createContext();
 
 export default () => {
-    const [period] = useState([moment().startOf("month"), moment()]);
+    const [period] = useState([moment().subtract(1, "month"), moment()]);
     const [path] = useLocation();
 
     return (
