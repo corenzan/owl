@@ -42,7 +42,7 @@ func New(endpoint, key string) *Agent {
 func (a *Agent) Check(website *api.Website) (*api.Check, error) {
 	check := &api.Check{
 		WebsiteID: website.ID,
-		Result:    api.ResultUp,
+		Result:    api.ResultDown,
 		Latency:   &api.Latency{},
 	}
 	timeline := &Timeline{}
@@ -77,11 +77,10 @@ func (a *Agent) Check(website *api.Website) (*api.Check, error) {
 		return nil, err
 	}
 	resp, err := a.client.Do(req.WithContext(httptrace.WithClientTrace(req.Context(), trace)))
-	if err != nil {
-		check.Result = api.ResultDown
-	}
-	if resp.StatusCode >= 500 {
-		check.Result = api.ResultDown
+	if err == nil {
+		if resp.StatusCode < 500 {
+			check.Result = api.ResultUp
+		}
 	}
 	check.Latency.Total = check.Latency.DNS + check.Latency.TLS +
 		check.Latency.Connection + check.Latency.Application
@@ -123,9 +122,10 @@ func (a *Agent) Run() {
 			if err != nil {
 				log.Printf("agent: check failed: %s", err)
 			}
-			err = a.Report(check)
-			if err != nil {
-				log.Printf("agent: report failed: %s", err)
+			if check != nil {
+				if err := a.Report(check); err != nil {
+					log.Printf("agent: report failed: %s", err)
+				}
 			}
 		})(website)
 	}
