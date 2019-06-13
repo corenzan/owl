@@ -6,11 +6,12 @@
 
 ## About
 
-Owl comprises three packages:
+Owl comprises 3 Go modules and 1 React application:
 
-1. A web server that handles all the data in and out of the database.
+1. An web server that handles all the data in and out of the database.
 2. An agent that can check HTTP endpoints and post the results to the server.
-3. A client that displays a dashboard and allows users to manage what websites to check.
+3. An API library for common types.
+4. A client that displays a dashboard and allows users to manage what websites to check.
 
 ## Development
 
@@ -22,20 +23,21 @@ $ docker-compose up
 
 ### Server
 
-Located at [./api](api).
+Located at [./srv](srv).
 
-The server is a web service written in Go using [Echo](https://echo.labstack.com/) and backed by PostgreSQL 11. The container will watch for source file changes and automatically rebuild.
+The Server is a web service written in Go using [Echo](https://echo.labstack.com/) and backed by PostgreSQL 11. The container will watch for source file changes and automatically rebuild.
 
 ### Agent
 
 Located at [./agent](agent).
 
-The agent is a Go package designed to be invoked from a standalone Go program. The container will watch for source file changes and automatically run its test suite.
+The Agent is a Go package designed to be invoked from a standalone Go program. The container will watch for source file changes and automatically run its test suite.
 
-The agent also comes with two sample applications:
+It also includes three sub-packages:
 
-- [./agent/lambda](agent/lambda) wraps the agent to run on Amazon Lambda.
-- [./agent/cli](agent/cli) wraps the agent to be ran from a CLI.
+-   [./agent/client](agent/client) a decorated HTTP client ready to talk with the Owl server.
+-   [./agent/lambda](agent/lambda) wraps the agent to run on Amazon Lambda.
+-   [./agent/cli](agent/cli) wraps the agent to be ran from a CLI.
 
 ### Client
 
@@ -46,7 +48,7 @@ The client is a React application controlled by [create-react-app](https://githu
 ⚠️ Although both the server and the client share the same repository **they're deployed separately**. For heroku like environments you can use [git-subtree](https://github.com/apenwarr/git-subtree/blob/master/git-subtree.txt). e.g.
 
 ```shell
-$ git subtree push --prefix server heroku master
+$ git subtree push --prefix srv heroku master
 ```
 
 ## License

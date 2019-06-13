@@ -9,14 +9,15 @@ import (
 	"sync"
 	"time"
 
-	"github.com/corenzan/owl/agent/api"
+	"github.com/corenzan/owl/agent/client"
+	"github.com/corenzan/owl/api"
 )
 
 type (
 	// Agent ...
 	Agent struct {
-		api    *api.API
-		client *http.Client
+		apiClient   *client.Client
+		checkClient *http.Client
 	}
 
 	// Timeline ...
@@ -28,8 +29,8 @@ type (
 // New ...
 func New(endpoint, key string) *Agent {
 	return &Agent{
-		api: api.New(endpoint, key),
-		client: &http.Client{
+		apiClient: client.New(endpoint, key),
+		checkClient: &http.Client{
 			Timeout: time.Second * 10,
 			CheckRedirect: func(_ *http.Request, _ []*http.Request) error {
 				return http.ErrUseLastResponse
@@ -76,7 +77,7 @@ func (a *Agent) Check(website *api.Website) (*api.Check, error) {
 	if err != nil {
 		return nil, err
 	}
-	resp, err := a.client.Do(req.WithContext(httptrace.WithClientTrace(req.Context(), trace)))
+	resp, err := a.checkClient.Do(req.WithContext(httptrace.WithClientTrace(req.Context(), trace)))
 	if err == nil {
 		if resp.StatusCode < 500 {
 			check.Result = api.ResultUp
@@ -89,21 +90,21 @@ func (a *Agent) Check(website *api.Website) (*api.Check, error) {
 
 // Report ...
 func (a *Agent) Report(check *api.Check) error {
-	req, err := a.api.NewRequest("POST", fmt.Sprintf("/websites/%d/checks", check.WebsiteID), check)
+	req, err := a.apiClient.NewRequest("POST", fmt.Sprintf("/websites/%d/checks", check.WebsiteID), check)
 	if err != nil {
 		return err
 	}
-	return a.api.Do(req, nil)
+	return a.apiClient.Do(req, nil)
 }
 
 // Run ...
 func (a *Agent) Run() {
-	req, err := a.api.NewRequest("GET", "/websites?checkable=1", nil)
+	req, err := a.apiClient.NewRequest("GET", "/websites?checkable=1", nil)
 	if err != nil {
 		log.Printf("agent: failed to fetch websites: %s", err)
 	}
 	websites := []*api.Website{}
-	err = a.api.Do(req, &websites)
+	err = a.apiClient.Do(req, &websites)
 	if err != nil {
 		log.Printf("agent: failed to fetch websites: %s", err)
 	}
