@@ -4,10 +4,17 @@ services:
         build: ./agent
         volumes:
             - .:/go/src/github.com/corenzan/owl
+        working_dir: /go/src/github.com/corenzan/owl/agent
     api:
         build: ./api
         volumes:
             - .:/go/src/github.com/corenzan/owl
+        working_dir: /go/src/github.com/corenzan/owl/api
+    srv:
+        build: ./srv
+        volumes:
+            - .:/go/src/github.com/corenzan/owl
+        working_dir: /go/src/github.com/corenzan/owl/srv
         ports:
             - 5000
         environment:

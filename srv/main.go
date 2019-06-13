@@ -9,66 +9,15 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/corenzan/owl/api"
+
 	"github.com/jackc/pgx"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
 
-type (
-	// Website ...
-	Website struct {
-		ID      uint      `json:"id"`
-		Updated time.Time `json:"updatedAt" db:"updated_at"`
-		Status  string    `json:"status"`
-		URL     string    `json:"url"`
-	}
-
-	// Latency ...
-	Latency struct {
-		DNS         time.Duration `json:"dns"`
-		Connection  time.Duration `json:"connection"`
-		TLS         time.Duration `json:"tls"`
-		Application time.Duration `json:"application"`
-		Total       time.Duration `json:"total"`
-	}
-
-	// Check ...
-	Check struct {
-		ID        uint      `json:"id"`
-		WebsiteID uint      `json:"websiteId,omitempty" db:"website_id"`
-		Checked   time.Time `json:"checkedAt" db:"checked_at"`
-		Result    string    `json:"result"`
-		Latency   *Latency  `json:"latency"`
-	}
-
-	// Stats ...
-	Stats struct {
-		Uptime  float64 `json:"uptime"`
-		Apdex   float64 `json:"apdex"`
-		Average float64 `json:"average"`
-		Lowest  float64 `json:"lowest"`
-		Highest float64 `json:"highest"`
-		Count   uint    `json:"count"`
-	}
-
-	// Entry ...
-	Entry struct {
-		Time     time.Time     `json:"time"`
-		Status   string        `json:"status"`
-		Duration time.Duration `json:"duration"`
-	}
-)
-
 const (
-	statusUnknown     = "unknown"
-	statusMaintenance = "maintenance"
-	statusUp          = "up"
-	statusDown        = "down"
-
-	resultUp   = "up"
-	resultDown = "down"
-
 	// Threshold of a satisfactory request, in ms.
 	apdexThreshold = 2000
 )
@@ -76,7 +25,7 @@ const (
 var db *pgx.ConnPool
 
 func handleNewWebsite(c echo.Context) error {
-	website := &Website{}
+	website := &api.Website{}
 	if err := c.Bind(website); err != nil {
 		panic(err)
 	}
@@ -91,7 +40,7 @@ func handleNewWebsite(c echo.Context) error {
 }
 
 func handleGetWebsite(c echo.Context) error {
-	website := &Website{}
+	website := &api.Website{}
 	q := `select id, url, status, updated_at from websites where id = $1 limit 1;`
 	if err := db.QueryRow(q, c.Param("id")).Scan(&website.ID, &website.URL, &website.Status, &website.Updated); err != nil {
 		if err == pgx.ErrNoRows {
@@ -131,7 +80,7 @@ func handleGetWebsiteStats(c echo.Context) error {
 	if httpErr != nil {
 		return httpErr
 	}
-	stats := &Stats{}
+	stats := &api.Stats{}
 	q = `select percentage(count(*) filter (where result = 'up'), count(result)) as uptime 
 		from checks where website_id = $1 and checked_at between $2::timestamptz and $3::timestamptz;`
 	if err := db.QueryRow(q, c.Param("id"), after, before).Scan(&stats.Uptime); err != nil {
@@ -182,9 +131,9 @@ func handleListWebsites(c echo.Context) error {
 		panic(err)
 	}
 	defer rows.Close()
-	websites := []*Website{}
+	websites := []*api.Website{}
 	for rows.Next() {
-		website := &Website{}
+		website := &api.Website{}
 		if err := rows.Scan(&website.ID, &website.URL, &website.Status, &website.Updated); err != nil {
 			panic(err)
 		}
@@ -197,7 +146,7 @@ func handleListWebsites(c echo.Context) error {
 }
 
 func handleNewCheck(c echo.Context) error {
-	website := &Website{}
+	website := &api.Website{}
 	q := `select id, status from websites where id = $1 limit 1;`
 	if err := db.QueryRow(q, c.Param("id")).Scan(&website.ID, &website.Status); err != nil {
 		if err == pgx.ErrNoRows {
@@ -205,7 +154,7 @@ func handleNewCheck(c echo.Context) error {
 		}
 		panic(err)
 	}
-	check := &Check{
+	check := &api.Check{
 		WebsiteID: website.ID,
 	}
 	if err := c.Bind(check); err != nil {
@@ -215,9 +164,9 @@ func handleNewCheck(c echo.Context) error {
 	if err := db.QueryRow(q, website.ID, check.Result, check.Latency).Scan(&check.ID, &check.Checked); err != nil {
 		panic(err)
 	}
-	status := statusDown
-	if check.Result == resultUp {
-		status = statusUp
+	status := api.StatusDown
+	if check.Result == api.ResultUp {
+		status = api.StatusUp
 	}
 	if website.Status != status {
 		q := `update websites set updated_at = current_timestamp, status = $2 where id = $1;`
@@ -251,9 +200,9 @@ func handleListChecks(c echo.Context) error {
 		panic(err)
 	}
 	defer rows.Close()
-	checks := []*Check{}
+	checks := []*api.Check{}
 	for rows.Next() {
-		check := &Check{}
+		check := &api.Check{}
 		if err := rows.Scan(&check.ID, &check.Checked, &check.Result, &check.Latency); err != nil {
 			panic(err)
 		}
@@ -288,10 +237,10 @@ func handleListHistory(c echo.Context) error {
 		}
 	}
 	defer rows.Close()
-	history := []*Entry{}
-	previousEntry := &Entry{}
+	history := []*api.Entry{}
+	previousEntry := &api.Entry{}
 	for rows.Next() {
-		entry := &Entry{}
+		entry := &api.Entry{}
 		if err := rows.Scan(&entry.Time, &entry.Status, &entry.Duration); err != nil {
 			panic(err)
 		}
@@ -350,7 +299,8 @@ func main() {
 	e.POST("/websites", handleNewWebsite, authorize)
 	e.POST("/websites/:id/checks", handleNewCheck, authorize)
 
-	shutdown := make(chan os.Signal, 2)
+	done := make(chan struct{})
+	shutdown := make(chan os.Signal)
 	signal.Notify(shutdown, syscall.SIGTERM, syscall.SIGINT)
 	go func() {
 		// Wait for the signal.
@@ -360,11 +310,11 @@ func main() {
 		if err := e.Shutdown(ctx); err != nil {
 			e.Logger.Fatal(err)
 		}
-		close(shutdown)
+		done <- struct{}{}
 	}()
 
 	e.Logger.Fatal(e.Start(":" + os.Getenv("PORT")))
 
-	// Wait for shutdown or a second signal.
-	<-shutdown
+	// Wait for shutdown to be done.
+	<-done
 }

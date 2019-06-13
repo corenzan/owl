@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/corenzan/owl/agent/api"
+	"github.com/corenzan/owl/api"
 )
 
 type RoundTripFunc func(req *http.Request) *http.Response
@@ -22,18 +22,18 @@ func NewTestClient(fn RoundTripFunc) *http.Client {
 }
 
 func TestNew(t *testing.T) {
-	a := New("https://api", "123")
-	if a.api.Endpoint != "https://api" {
+	c := New("https://api", "123")
+	if c.apiClient.Endpoint != "https://api" {
 		t.Fail()
 	}
-	if a.api.Key != "123" {
+	if c.apiClient.Key != "123" {
 		t.Fail()
 	}
 }
 
 func TestAgentCheck(t *testing.T) {
 	history := []*http.Request{}
-	c := NewTestClient(func(req *http.Request) *http.Response {
+	testHTTPClient := NewTestClient(func(req *http.Request) *http.Response {
 		history = append(history, req)
 		return &http.Response{
 			StatusCode: 200,
@@ -42,11 +42,11 @@ func TestAgentCheck(t *testing.T) {
 		}
 	})
 
-	a := New("https://api", "123")
-	a.client = c
-	a.api.Client = c
+	c := New("https://api", "123")
+	c.checkClient = testHTTPClient
+	c.apiClient.Client = testHTTPClient
 
-	check, err := a.Check(&api.Website{
+	check, err := c.Check(&api.Website{
 		ID:  1,
 		URL: "https://website",
 	})
@@ -61,7 +61,7 @@ func TestAgentCheck(t *testing.T) {
 		t.Fail()
 	}
 
-	err = a.Report(check)
+	err = c.Report(check)
 
 	if err != nil {
 		t.Fail()

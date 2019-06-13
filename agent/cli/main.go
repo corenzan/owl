@@ -6,7 +6,7 @@ import (
 	"os"
 
 	"github.com/corenzan/owl/agent"
-	"github.com/corenzan/owl/agent/api"
+	"github.com/corenzan/owl/api"
 )
 
 var (
@@ -14,8 +14,8 @@ var (
 )
 
 func init() {
-	flag.StringVar(&endpoint, "endpoint", os.Getenv("API_URL"), "endpoint for the api, also read from API_URL")
-	flag.StringVar(&key, "key", os.Getenv("API_KEY"), "key for api authorization, also read from API_KEY")
+	flag.StringVar(&endpoint, "endpoint", os.Getenv("API_URL"), "endpoint for the API, also read from API_URL")
+	flag.StringVar(&key, "key", os.Getenv("API_KEY"), "key for API authorization, also read from API_KEY")
 	flag.StringVar(&url, "url", "", "skip the API and just check given URL")
 }
 

@@ -5,4 +5,4 @@ RUN go get github.com/cespare/reflex
 
 ENV GO111MODULE on
 
-CMD ["reflex", "--", "go", "test", "-cover", ".", "./client"]
+CMD ["reflex", "-s", "--", "go", "run", "."]
