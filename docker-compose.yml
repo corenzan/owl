@@ -3,18 +3,18 @@ services:
     agent:
         build: ./agent
         volumes:
-            - .:/go/src/github.com/corenzan/owl
-        working_dir: /go/src/github.com/corenzan/owl/agent
+            - .:/src/owl
+        working_dir: /src/owl/agent
     api:
         build: ./api
         volumes:
-            - .:/go/src/github.com/corenzan/owl
-        working_dir: /go/src/github.com/corenzan/owl/api
+            - .:/src/owl
+        working_dir: /src/owl/api
     srv:
         build: ./srv
         volumes:
-            - .:/go/src/github.com/corenzan/owl
-        working_dir: /go/src/github.com/corenzan/owl/srv
+            - .:/src/owl
+        working_dir: /src/owl/srv
         ports:
             - 5000
         environment:
@@ -29,7 +29,7 @@ services:
         ports:
             - 3000
         volumes:
-            - ./client:/usr/local/src
+            - ./client:/src
         environment:
             - VIRTUAL_HOST=owl.localhost
             - REACT_APP_API_URL=http://api.owl.localhost
