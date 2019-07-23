@@ -1,10 +1,10 @@
 FROM node:11.9-alpine
 
-WORKDIR /usr/local/src
-ADD package.json yarn.lock /usr/local/src/
+WORKDIR /src
+ADD package.json yarn.lock /src/
 RUN yarn 
 
-ADD . /usr/local/src
+ADD . /src
 EXPOSE 3000
 
 CMD ["yarn", "start"]
