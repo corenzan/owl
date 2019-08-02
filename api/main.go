@@ -7,6 +7,7 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
+	"strconv"
 
 	"github.com/jackc/pgx"
 
@@ -314,7 +315,8 @@ func main() {
 		panic(err)
 	}
 	db, err = pgx.NewConnPool(pgx.ConnPoolConfig{
-		ConnConfig: config,
+		ConnConfig:     config,
+		MaxConnections: strconv.Atoi(os.Getenv("DATABASE_POOL")),
 	})
 	if err != nil {
 		panic(err)
