@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 	"time"
-	"strconv"
 
 	"github.com/jackc/pgx"
 
@@ -309,19 +309,25 @@ func handleListHistory(c echo.Context) error {
 	return nil
 }
 
-func main() {
+func init() {
 	config, err := pgx.ParseURI(os.Getenv("DATABASE_URL"))
+	if err != nil {
+		panic(err)
+	}
+	maxConn, err := strconv.Atoi(os.Getenv("DATABASE_POOL"))
 	if err != nil {
 		panic(err)
 	}
 	db, err = pgx.NewConnPool(pgx.ConnPoolConfig{
 		ConnConfig:     config,
-		MaxConnections: strconv.Atoi(os.Getenv("DATABASE_POOL")),
+		MaxConnections: maxConn,
 	})
 	if err != nil {
 		panic(err)
 	}
+}
 
+func main() {
 	e := echo.New()
 
 	e.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
