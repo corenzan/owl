@@ -1,6 +1,6 @@
 # Owl
 
-> Owl is an open source self-hosted solution for website monitoring and status report.
+> Owl is an open-source self-hosted solution for website monitoring and status report.
 
 ![Owl](screenshot.png)
 
@@ -11,7 +11,7 @@ Owl comprises 3 Go modules and 1 React application:
 1. An web server that handles all the data in and out of the database.
 2. An agent that can check HTTP endpoints and post the results to the server.
 3. An API library for common types.
-4. A client that displays a dashboard and allows users to manage what websites to check.
+4. A web client for the dashboard.
 
 ## Development
 
@@ -35,9 +35,9 @@ The Agent is a Go package designed to be invoked from a standalone Go program. T
 
 It also includes three sub-packages:
 
--   [./agent/client](agent/client) a decorated HTTP client ready to talk with the Owl server.
--   [./agent/lambda](agent/lambda) wraps the agent to run on Amazon Lambda.
--   [./agent/cli](agent/cli) wraps the agent to be ran from a CLI.
+- [./agent/client](agent/client) a decorated HTTP client ready to talk with the Owl server.
+- [./agent/lambda](agent/lambda) wraps the client to run on Amazon Lambda.
+- [./agent/cli](agent/cli) wraps the client to be ran from a CLI.
 
 ### Client
 
@@ -53,4 +53,4 @@ $ git subtree push --prefix srv heroku master
 
 ## License
 
-The MIT License © 2019 Corenzan
+MIT License © 2019 Corenzan
