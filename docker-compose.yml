@@ -1,42 +1,43 @@
 version: "3"
 services:
-    agent:
-        build: ./agent
-        volumes:
-            - .:/src/owl
-        working_dir: /src/owl/agent
-    api:
-        build: ./api
-        volumes:
-            - .:/src/owl
-        working_dir: /src/owl/api
-    srv:
-        build: ./srv
-        volumes:
-            - .:/src/owl
-        working_dir: /src/owl/srv
-        ports:
-            - 5000
-        environment:
-            - PORT=5000
-            - API_KEY=123
-            - VIRTUAL_HOST=api.owl.localhost
-            - DATABASE_URL=postgres://postgres:123@db/postgres?sslmode=disable
-        depends_on:
-            - db
-    client:
-        build: ./client
-        ports:
-            - 3000
-        volumes:
-            - ./client:/src
-        environment:
-            - VIRTUAL_HOST=owl.localhost
-            - REACT_APP_API_URL=http://api.owl.localhost
-    db:
-        image: postgres:11-alpine
-        ports:
-            - 5432
-        environment:
-            - POSTGRES_PASSWORD=123
-            - PGPASSWORD=123
+  agent:
+    build: ./agent
+    volumes:
+      - .:/app/owl
+    working_dir: /app/owl/agent
+  api:
+    build: ./api
+    volumes:
+      - .:/app/owl
+    working_dir: /app/owl/api
+  srv:
+    build: ./srv
+    volumes:
+      - .:/app/owl
+    working_dir: /app/owl/srv
+    ports:
+      - 5000
+    environment:
+      - PORT=5000
+      - API_KEY=123
+      - VIRTUAL_HOST=api.owl.localhost
+      - DATABASE_URL=postgres://postgres:123@db/postgres?sslmode=disable
+    depends_on:
+      - db
+  client:
+    build: ./client
+    ports:
+      - 3000
+    volumes:
+      - ./client:/app
+      - /app/node_modules
+    environment:
+      - VIRTUAL_HOST=owl.localhost
+      - REACT_APP_API_URL=http://api.owl.localhost
+  db:
+    image: postgres:12-alpine
+    ports:
+      - 5432
+    environment:
+      - POSTGRES_PASSWORD=123
+      - PGPASSWORD=123

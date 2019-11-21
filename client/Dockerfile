@@ -1,10 +1,10 @@
-FROM node:11.9-alpine
+FROM node:12.12-alpine
 
-WORKDIR /src
-ADD package.json yarn.lock /src/
-RUN yarn 
+WORKDIR /app
+COPY package.json yarn.lock ./
+RUN npm i
 
-ADD . /src
+COPY . .
 EXPOSE 3000
 
 CMD ["yarn", "start"]
