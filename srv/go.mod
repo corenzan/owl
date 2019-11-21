@@ -1,5 +1,4 @@
 // +heroku goVersion go1.13
-// +heroku install .
 
 module github.com/corenzan/owl/srv
 
