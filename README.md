@@ -23,7 +23,7 @@ $ docker-compose up
 
 ### Server
 
-Located at [./srv](srv).
+Located at [./web](web).
 
 The Server is a web service written in Go using [Echo](https://echo.labstack.com/) and backed by PostgreSQL 11. The container will watch for source file changes and automatically rebuild.
 
@@ -48,7 +48,7 @@ The client is a React application controlled by [create-react-app](https://githu
 ⚠️ Although both the server and the client share the same repository **they're deployed separately**. For heroku like environments you can use [git-subtree](https://github.com/apenwarr/git-subtree/blob/master/git-subtree.txt). e.g.
 
 ```shell
-$ git subtree push --prefix srv heroku master
+$ git subtree push --prefix web heroku master
 ```
 
 ## License

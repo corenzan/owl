@@ -10,11 +10,11 @@ services:
     volumes:
       - .:/app/owl
     working_dir: /app/owl/api
-  srv:
-    build: ./srv
+  web:
+    build: ./web
     volumes:
       - .:/app/owl
-    working_dir: /app/owl/srv
+    working_dir: /app/owl/web
     ports:
       - 5000
     environment:

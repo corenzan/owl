@@ -1,5 +1,5 @@
 // +heroku goVersion go1.13
-// +heroku install github.com/corenzan/owl/api github.com/corenzan/owl/srv
+// +heroku install github.com/corenzan/owl/web
 
 module github.com/corenzan/owl
 
