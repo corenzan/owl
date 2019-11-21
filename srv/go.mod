@@ -3,7 +3,7 @@ module github.com/corenzan/owl/srv
 go 1.13
 
 require (
-	github.com/corenzan/owl/api v0.0.0
+	github.com/corenzan/owl/api v0.0.0-20191121211054-47cdbdb5781f
 	github.com/jackc/pgtype v1.0.3 // indirect
 	github.com/jackc/pgx/v4 v4.1.2
 	github.com/labstack/echo/v4 v4.1.11
