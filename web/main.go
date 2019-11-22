@@ -184,26 +184,48 @@ func handleGetWebsiteStats(c echo.Context) error {
 	return nil
 }
 
-func queryWebsites(checkable string) ([]*api.Website, error) {
-	q := `
-		select
-			id,
-			url,
-			status,
-			updated_at
-		from
-			websites
-		order by
-			status desc,
-			updated_at desc;
-	`
-	if checkable != "" {
-		q = `
+func queryWebsites(checkable, beginning, ending string) ([]*api.Website, error) {
+	if beginning == "" {
+		return nil, errMissingArgument
+	}
+	if ending == "" {
+		ending = time.Now().String()
+	}
+	var rows pgx.Rows
+	var err error
+	if checkable == "" {
+		q := `
 			select
 				id,
 				url,
 				status,
-				updated_at
+				updated_at,
+				uptime
+			from
+				websites
+			left join
+				(select
+					website_id,
+					percentage(count(*) filter (where result = 'up'), count(*)) as uptime
+				from
+					checks
+				where
+					checked_at between $1 and $2
+				group by
+				website_id) t on id = website_id
+			order by
+				status desc,
+				updated_at desc;
+		`
+		rows, err = db.Query(context.Background(), q, beginning, ending)
+	} else {
+		q := `
+			select
+				id,
+				url,
+				status,
+				updated_at,
+				0
 			from
 				websites
 			where
@@ -212,8 +234,8 @@ func queryWebsites(checkable string) ([]*api.Website, error) {
 				status desc,
 				updated_at desc;
 		`
+		rows, err = db.Query(context.Background(), q)
 	}
-	rows, err := db.Query(context.Background(), q)
 	if err != nil {
 		return nil, err
 	}
@@ -226,6 +248,7 @@ func queryWebsites(checkable string) ([]*api.Website, error) {
 			&website.URL,
 			&website.Status,
 			&website.Updated,
+			&website.Uptime,
 		}
 		if err := rows.Scan(fields...); err != nil {
 			return nil, err
@@ -236,15 +259,19 @@ func queryWebsites(checkable string) ([]*api.Website, error) {
 }
 
 func handleListWebsites(c echo.Context) error {
-	websites, err := queryWebsites(c.QueryParam("checkable"))
+	websites, err := queryWebsites(c.QueryParam("checkable"), c.QueryParam("after"), c.QueryParam("before"))
 	if err != nil {
-		if err == pgx.ErrNoRows {
+		switch err {
+		case pgx.ErrNoRows:
 			return echo.NewHTTPError(http.StatusNotFound)
+		case errMissingArgument:
+			return echo.NewHTTPError(http.StatusBadRequest)
+		default:
+			panic(err)
 		}
-		return err
 	}
 	if err := c.JSON(http.StatusOK, websites); err != nil {
-		return err
+		panic(err)
 	}
 	return nil
 }

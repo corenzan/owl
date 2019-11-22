@@ -11,6 +11,7 @@ type (
 		Updated time.Time `json:"updatedAt" db:"updated_at"`
 		Status  string    `json:"status"`
 		URL     string    `json:"url"`
+		Uptime  float64   `json:"uptime"`
 	}
 
 	// Latency ...
