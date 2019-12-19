@@ -185,7 +185,7 @@ func handleGetWebsiteStats(c echo.Context) error {
 }
 
 func queryWebsites(checkable, beginning, ending string) ([]*api.Website, error) {
-	if beginning == "" {
+	if checkable == "" && beginning == "" {
 		return nil, errMissingArgument
 	}
 	if ending == "" {
@@ -225,7 +225,7 @@ func queryWebsites(checkable, beginning, ending string) ([]*api.Website, error) 
 				url,
 				status,
 				updated_at,
-				0
+				0.0
 			from
 				websites
 			where
