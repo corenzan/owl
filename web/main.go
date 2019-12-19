@@ -200,7 +200,7 @@ func queryWebsites(checkable, beginning, ending string) ([]*api.Website, error) 
 				url,
 				status,
 				updated_at,
-				uptime
+				coalesce(uptime, 0) as uptime
 			from
 				websites
 			left join
